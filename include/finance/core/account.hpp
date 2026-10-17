@@ -6,11 +6,21 @@
 #include <string>
 #include <vector>
 
-#include "finance/core/enumerators.hpp"
-#include "finance/core/identifiers.hpp"
+#include "finance/core/currency.hpp"
 #include "finance/core/interfaces.hpp"
 
 namespace finance::core {
+/**
+ * @brief Strongly typed identifier for an account.
+ *
+ * The underlying value is an unsigned integer.
+ */
+enum class AccountIdentifier : unsigned int {};
+
+/**
+ * @brief Classification of an account in the chart of accounts.
+ */
+enum class AccountType { ASSET, LIABILITY, EQUITY, INCOME, EXPENSE };
 
 /**
  * @brief Describes an account in the chart of accounts.
@@ -38,16 +48,6 @@ struct Account : Identifiable<AccountIdentifier> {
    * @brief Currency used to record amounts for the account.
    */
   CurrencyInfo currency;
-};
-
-/**
- * @brief Describes a contact associated with a financial entity.
- */
-struct Contact : Identifiable<ContactIdentifier> {
-  /**
-   * @brief Name of the contact.
-   */
-  std::string name;
 };
 
 } // namespace finance::core
