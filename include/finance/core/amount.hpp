@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "finance/core/types.hpp"
+#include "finance/core/currency.hpp"
 
 namespace finance::core {
 
