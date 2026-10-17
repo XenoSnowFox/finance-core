@@ -18,7 +18,7 @@ struct CurrencyInfo {
    *
    * Defaults to 2.
    */
-  int decimal_places{2};
+  unsigned char decimal_places{2};
 
   /**
    * @brief Symbol used to display this currency, such as $ or ¥.
