@@ -25,7 +25,8 @@ public:
    * @param identifier Identifier of the record to find.
    * @return The matching record, or an empty optional if no record is found.
    */
-  std::optional<RECORD> find_by_id(const IDENTIFIER &identifier) const override;
+  std::optional<RECORD>
+  find_by_identifier(const IDENTIFIER &identifier) const override;
 
   /**
    * @brief Finds all records.
