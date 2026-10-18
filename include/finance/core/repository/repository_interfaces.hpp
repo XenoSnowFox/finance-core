@@ -25,14 +25,14 @@ public:
    * @param identifier Identifier of the record to find.
    * @return The matching record, or an empty optional if no record is found.
    */
-  std::optional<RECORD>
-  find_by_identifier(const IDENTIFIER &identifier) const override;
+  virtual std::optional<RECORD>
+  find_by_identifier(const IDENTIFIER &identifier) const = 0;
 
   /**
    * @brief Finds all records.
    *
    * @return All records in the repository.
    */
-  std::vector<RECORD> find_all() const override;
+  virtual std::vector<RECORD> find_all() const = 0;
 };
 } // namespace finance::core::repository

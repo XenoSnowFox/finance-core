@@ -12,9 +12,10 @@ namespace finance::core::repository {
  */
 class AccountRepository
     : public IFindableRepository<domain::AccountIdentifier, domain::Account> {
+public:
   /**
    * @brief Destroys the repository through a base-class pointer.
    */
-  virtual ~AccountRepository() = default;
+  ~AccountRepository() override = default;
 };
 } // namespace finance::core::repository
