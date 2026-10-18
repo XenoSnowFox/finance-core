@@ -4,7 +4,7 @@
 
 #include "finance/core/interfaces.hpp"
 
-namespace finance::core {
+namespace finance::core::domain {
 
 /**
  * @brief Strongly typed identifier for a business entity.
@@ -22,4 +22,4 @@ struct BusinessEntity : Identifiable<BusinessEntityIdentifier> {
    */
   std::string name;
 };
-} // namespace finance::core
+} // namespace finance::core::domain

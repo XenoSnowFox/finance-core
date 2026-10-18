@@ -4,12 +4,12 @@
 #include <string>
 #include <vector>
 
-#include "finance/core/account.hpp"
-#include "finance/core/amount.hpp"
-#include "finance/core/contact.hpp"
+#include "finance/core/domain/account.hpp"
+#include "finance/core/domain/amount.hpp"
+#include "finance/core/domain/contact.hpp"
 #include "finance/core/interfaces.hpp"
 
-namespace finance::core {
+namespace finance::core::domain {
 
 /**
  * @brief Strongly typed identifier for a transaction.
@@ -123,4 +123,4 @@ struct Transaction : Identifiable<TransactionIdentifier> {
     return entries.size() >= 2 && is_balanced();
   }
 };
-} // namespace finance::core
+} // namespace finance::core::domain

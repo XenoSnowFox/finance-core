@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace finance::core {
+namespace finance::core::domain {
 /**
  * @brief Describes the display and precision conventions of a currency.
  */
@@ -25,4 +25,4 @@ struct CurrencyInfo {
    */
   std::string_view symbol;
 };
-} // namespace finance::core
+} // namespace finance::core::domain

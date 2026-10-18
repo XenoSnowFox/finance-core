@@ -4,7 +4,7 @@
 
 #include "finance/core/interfaces.hpp"
 
-namespace finance::core {
+namespace finance::core::domain {
 /**
  * @brief Strongly typed identifier for a contact.
  *
@@ -21,4 +21,4 @@ struct Contact : Identifiable<ContactIdentifier> {
    */
   std::string name;
 };
-} // namespace finance::core
+} // namespace finance::core::domain

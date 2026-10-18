@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "finance/core/currency.hpp"
+#include "finance/core/domain/currency.hpp"
 #include "finance/core/interfaces.hpp"
 
-namespace finance::core {
+namespace finance::core::domain {
 /**
  * @brief Strongly typed identifier for an account.
  *
@@ -50,4 +50,4 @@ struct Account : Identifiable<AccountIdentifier> {
   CurrencyInfo currency;
 };
 
-} // namespace finance::core
+} // namespace finance::core::domain

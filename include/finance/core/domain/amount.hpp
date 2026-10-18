@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "finance/core/currency.hpp"
+#include "finance/core/domain/currency.hpp"
 
-namespace finance::core {
+namespace finance::core::domain {
 
 /**
  * @brief Integer representation of an amount in millionths of a base unit.
@@ -186,4 +186,4 @@ private:
   MicroUnits m__micro_units{0};
 };
 
-} // namespace finance::core
+} // namespace finance::core::domain
