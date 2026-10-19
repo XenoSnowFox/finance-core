@@ -18,6 +18,9 @@ template <typename IDENTIFIER, typename RECORD>
   requires std::derived_from<RECORD, Identifiable<IDENTIFIER>>
 class IFindableRepository {
 public:
+  /**
+   * @brief Destroys the repository through a base-class pointer.
+   */
   virtual ~IFindableRepository() = default;
   /**
    * @brief Finds a record by its identifier.
@@ -34,5 +37,30 @@ public:
    * @return All records in the repository.
    */
   virtual std::vector<RECORD> find_all() const = 0;
+};
+
+/**
+ * @brief Interface for removing records from a repository.
+ *
+ * @tparam IDENTIFIER Type used to identify records.
+ */
+template <typename IDENTIFIER> class IDeletableRepository {
+public:
+  /**
+   * @brief Destroys the repository through a base-class pointer.
+   */
+  virtual ~IDeletableRepository() = default;
+
+  /**
+   * @brief Deletes a record by its identifier.
+   *
+   * @param identifier Identifier of the record to delete.
+   */
+  virtual void delete_by_identifier(const IDENTIFIER &identifier) const = 0;
+
+  /**
+   * @brief Deletes all records from the repository.
+   */
+  virtual void delete_all() const = 0;
 };
 } // namespace finance::core::repository
