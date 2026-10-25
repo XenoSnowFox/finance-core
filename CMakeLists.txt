@@ -19,43 +19,14 @@ endif()
 include(FetchContent)
 
 # ------------------------------------------------------------------------------
-# Library Target (header-only for now)
+# Command-line application
 # ------------------------------------------------------------------------------
-add_library(finance_core INTERFACE)
-
-# Export include paths ($<BUILD_INTERFACE> for local builds, $<INSTALL_INTERFACE> for installs)
-target_include_directories(finance_core INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+add_executable(finance_core
+    src/main.cpp
 )
 
-# Namespace alias for downstream consumers (finance::core)
-add_library(finance::core ALIAS finance_core)
-
-# ------------------------------------------------------------------------------
-# Install / package config
-# ------------------------------------------------------------------------------
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
-
-install(TARGETS finance_core EXPORT finance-coreTargets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(EXPORT finance-coreTargets
-    NAMESPACE finance::
-    FILE finance-coreTargets.cmake
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/finance-core
-)
-
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/finance-coreConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-    ARCH_INDEPENDENT
-)
-install(FILES
-    cmake/finance-coreConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/finance-coreConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/finance-core
+target_include_directories(finance_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # ------------------------------------------------------------------------------
@@ -77,10 +48,11 @@ if(BUILD_TESTS)
         tests/test_transaction.cpp
     )
 
-    target_link_libraries(core_unit_tests PRIVATE
-        finance::core
-        Catch2::Catch2WithMain
+    target_include_directories(core_unit_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
+
+    target_link_libraries(core_unit_tests PRIVATE Catch2::Catch2WithMain)
 
     include(Catch)
     catch_discover_tests(core_unit_tests)

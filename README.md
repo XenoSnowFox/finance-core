@@ -1,3 +1,5 @@
 # finance::core
 
-C++ static library containing the core accounting rules, investment engine, and tax domain logic for a self-hosted personal and solo business finance system.
+C++ command-line application for a self-hosted personal and solo business finance system.
+
+Build the application with CMake and run the `finance_core` executable from the generated build directory.
