@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "finance/command/command_parser.hpp"
 
 namespace finance::command {
