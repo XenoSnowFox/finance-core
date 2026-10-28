@@ -1,6 +1,13 @@
 #pragma once
 
-#include "finance/command/command_parser.hpp"
+#include <memory>
+#include <optional>
+#include <queue>
+#include <string>
+
+#include "finance/command/currency_commands.hpp"
+#include "finance/command/documentation_commands.hpp"
+#include "finance/command/parsers.hpp"
 
 namespace finance::command {
 
@@ -8,24 +15,22 @@ struct GlobalCommandParser : CommandParser {
   GlobalCommandParser()
       : CommandParser{
             "finance-core",
-            "A self-hosted personal and solo business finance system."} {}
+            "A self-hosted personal and solo business finance system.",
+            nullptr,
+            {ArgumentParser{.keywords = {"-v", "--verbose"},
+                            .argument_name = std::nullopt,
+                            .summary = "Enable verbose logging.",
+                            .callback =
+                                [this](std::queue<std::string> &args) {
+                                  this->verbose_logging = true;
+                                }}},
+            {std::make_shared<DocumentationCommandParser>(*this),
+             std::make_shared<CurrencyCommandParser>(*this)}} {}
 
   /// @brief  special Global setting
-  bool isSomething = false;
+  bool verbose_logging = false;
 };
 
-inline const GlobalCommandParser GLOBAL_COMMAND_PARSER{};
-
-/*
-    I would expect the following line of code to work.
-    @code
-    // n should equal "finance-core";
-    std::string n = GLOBAL_COMMAND_PARSER.name;
-
-    const CommandParser *p = &GLOBAL_COMMAND_PARSER;
-    std::string x = p->name; // x should also equal "finance-core"
-
-
-*/
+inline GlobalCommandParser GLOBAL_COMMAND_PARSER;
 
 } // namespace finance::command
