@@ -56,11 +56,11 @@ public:
    *
    * @param identifier Identifier of the record to delete.
    */
-  virtual void delete_by_identifier(const IDENTIFIER &identifier) const = 0;
+  virtual void delete_by_identifier(const IDENTIFIER &identifier) = 0;
 
   /**
    * @brief Deletes all records from the repository.
    */
-  virtual void delete_all() const = 0;
+  virtual void delete_all() = 0;
 };
 } // namespace finance::core::repository
