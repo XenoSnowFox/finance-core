@@ -16,7 +16,7 @@ struct GlobalCommandParser : CommandParser {
   /// @brief Creates the finance-core command tree.
   GlobalCommandParser()
       : CommandParser{
-            "finance-core",
+            "finance_core",
             "A self-hosted personal and solo business finance system.",
             nullptr,
             {ArgumentParser{.keywords = {"-v", "--verbose"},
