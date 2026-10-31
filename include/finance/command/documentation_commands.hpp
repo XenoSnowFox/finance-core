@@ -1,12 +1,14 @@
 #pragma once
 
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <vector>
 
 #include "finance/command/parsers.hpp"
@@ -117,6 +119,19 @@ struct DocumentationCommandParser : CommandParser {
     case OutputFormat::MAN:
       filename = m_output_filename.value_or("./docs/finance-core.1");
       break;
+    }
+
+    const std::filesystem::path output_path(filename);
+    const std::filesystem::path output_directory = output_path.parent_path();
+    if (!output_directory.empty()) {
+      std::error_code error;
+      std::filesystem::create_directories(output_directory, error);
+      if (error) {
+        std::cerr << "Error: could not create documentation output directory '"
+                  << output_directory.string() << "': " << error.message()
+                  << '\n';
+        return 1;
+      }
     }
 
     std::ofstream output(filename);
