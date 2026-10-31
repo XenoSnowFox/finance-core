@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build-debug-windows",
+			"type": "shell",
+			"command": "cmake -S . -B build; cmake --build build --config Debug --target finance_core",
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "build-debug-linux",
+			"type": "shell",
+			"command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --target finance_core",
+			"group": "build",
+			"problemMatcher": "$gcc"
+		}
+	]
+}

@@ -1,0 +1,32 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug finance_core (Windows)",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/Debug/finance_core.exe",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"console": "integratedTerminal",
+			"preLaunchTask": "build-debug-windows"
+		},
+		{
+			"name": "Debug finance_core (Linux)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/finance_core",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-debug-linux"
+		}
+	]
+}
