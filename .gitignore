@@ -72,7 +72,7 @@ Testing/
 *.pem
 
 # default generated docs
-./docs/finance-core.txt
-./docs/finance-core.md
-./docs/finance-core.html
-./docs/finance-core.1
+docs/finance-core.txt
+docs/finance-core.md
+docs/finance-core.html
+docs/finance-core.1
