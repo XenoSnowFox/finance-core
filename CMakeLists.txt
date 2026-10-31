@@ -29,6 +29,10 @@ target_include_directories(finance_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_compile_definitions(finance_core PRIVATE
+    FINANCE_CORE_VERSION="${PROJECT_VERSION}"
+)
+
 # ------------------------------------------------------------------------------
 # Unit Testing (Catch2)
 # ------------------------------------------------------------------------------

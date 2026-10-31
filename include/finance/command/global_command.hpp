@@ -11,7 +11,9 @@
 
 namespace finance::command {
 
+/// @brief Root parser registering global options and top-level commands.
 struct GlobalCommandParser : CommandParser {
+  /// @brief Creates the finance-core command tree.
   GlobalCommandParser()
       : CommandParser{
             "finance-core",
@@ -25,12 +27,15 @@ struct GlobalCommandParser : CommandParser {
                                   this->verbose_logging = true;
                                 }}},
             {std::make_shared<DocumentationCommandParser>(*this),
-             std::make_shared<CurrencyCommandParser>(*this)}} {}
+             std::make_shared<CurrencyCommandParser>(*this)},
+            {CommandExample{"Display the available commands and options.",
+                            "finance-core --help"}}} {}
 
-  /// @brief  special Global setting
+  /// @brief Whether verbose logging is enabled by a global option.
   bool verbose_logging = false;
 };
 
+/// @brief Process-wide root command parser used by the application entry point.
 inline GlobalCommandParser GLOBAL_COMMAND_PARSER;
 
 } // namespace finance::command
