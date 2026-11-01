@@ -4,24 +4,15 @@
 #include <memory>
 #include <sqlite3.h>
 #include <string>
+#include <vector>
 
 #include "finance/database/database.hpp"
+#include "finance/database/sqlite3/connection_flags.hpp"
 #include "finance/database/sqlite3/exception.hpp"
 
 namespace finance::database::sqlite3 {
 /// @brief SQLite's success result code.
 extern const int OK = SQLITE_OK;
-
-/// @brief Open an existing database in read-only mode.
-extern const int OPEN_READONLY = SQLITE_OPEN_READONLY;
-
-/// @brief Open an existing database for reading and writing, falling back to
-/// read-only access if opening it for writing fails.
-extern const int OPEN_READWRITE = SQLITE_OPEN_READWRITE;
-
-/// @brief Create the database if it does not exist when used with
-/// `OPEN_READWRITE`.
-extern const int OPEN_CREATE = SQLITE_OPEN_CREATE;
 
 /// @brief RAII wrapper around a SQLite database connection.
 ///
@@ -29,27 +20,33 @@ extern const int OPEN_CREATE = SQLITE_OPEN_CREATE;
 /// Connections are opened read-only by default.
 class Database : public database::Database {
 public:
- /**
-  * @brief Open a SQLite database connection.
-  *
-  * @param filename Path of the database to open, or a URI filename when
-  * `SQLITE_OPEN_URI` is included in `flags`.
-  * @param flags SQLite open flags. Defaults to `OPEN_READONLY`.
-  * @param busy_timeout_in_milliseconds Positive busy timeout to set after
-  * opening, in milliseconds. Non-positive values leave SQLite's default
-  * timeout unchanged.
-  * @param apVfs Name of the SQLite VFS module to use, or `nullptr` for the
-  * default VFS.
-  * @throws Exception if SQLite cannot open the database or set the requested
-  * busy timeout.
-  */
- Database(const std::string &filename, const int flags = OPEN_READONLY,
-          const int busy_timeout_in_milliseconds = 0,
-          const char *apVfs = nullptr)
+  /**
+   * @brief Open a SQLite database connection.
+   *
+   * @param filename Path of the database to open, or a URI filename when
+   * `ConnectionFlag::URI` is included in `flags`.
+   * @param flags SQLite connection flags. Defaults to
+   * `ConnectionFlag::READ_ONLY`.
+   * @param busy_timeout_in_milliseconds Positive busy timeout to set after
+   * opening, in milliseconds. Non-positive values leave SQLite's default
+   * timeout unchanged.
+   * @throws Exception if SQLite cannot open the database or set the requested
+   * busy timeout.
+   */
+  Database(
+      const std::string &filename,
+      const std::vector<ConnectionFlag> flags = {ConnectionFlag::READ_ONLY},
+      const int busy_timeout_in_milliseconds = 0)
       : m_filename(filename) {
+
+    int connection_flags = 0;
+    for (auto &flag : flags) {
+      connection_flags |= static_cast<int>(flag);
+    }
+
     ::sqlite3 *handle;
     const int error_code =
-        sqlite3_open_v2(m_filename.c_str(), &handle, flags, apVfs);
+        sqlite3_open_v2(m_filename.c_str(), &handle, connection_flags, nullptr);
     m_sqlite3_instance.reset(handle);
 
     if (OK != error_code) {
