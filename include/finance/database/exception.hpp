@@ -25,8 +25,12 @@ public:
   Exception(const std::string &error_message, const int error_code)
       : Exception(error_message.c_str(), error_code) {}
 
+  /// @brief Returns the backend-specific numeric error code.
+  /// @return Stored backend-specific error code.
+  const int getErrorCode() const noexcept { return this->m_error_code; }
+
 protected:
-  /// Backend-specific error code.
+  /// @brief Backend-specific numeric error code stored by this exception.
   const int m_error_code;
 };
 } // namespace finance::database
