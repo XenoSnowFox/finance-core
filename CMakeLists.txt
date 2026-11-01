@@ -18,6 +18,17 @@ endif()
 # ------------------------------------------------------------------------------
 include(FetchContent)
 
+FetchContent_Declare(
+    sqlite_amalgamation
+    URL https://www.sqlite.org/2025/sqlite-amalgamation-3490100.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(sqlite_amalgamation)
+
+add_library(sqlite3 STATIC ${sqlite_amalgamation_SOURCE_DIR}/sqlite3.c)
+target_include_directories(sqlite3 PUBLIC ${sqlite_amalgamation_SOURCE_DIR})
+add_library(SQLite::SQLite3 ALIAS sqlite3)
+
 # ------------------------------------------------------------------------------
 # Command-line application
 # ------------------------------------------------------------------------------
@@ -32,6 +43,8 @@ target_include_directories(finance_core PRIVATE
 target_compile_definitions(finance_core PRIVATE
     FINANCE_CORE_VERSION="${PROJECT_VERSION}"
 )
+
+target_link_libraries(finance_core PRIVATE SQLite::SQLite3)
 
 # ------------------------------------------------------------------------------
 # Unit Testing (Catch2)
