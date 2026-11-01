@@ -38,6 +38,9 @@
 *.out
 *.app
 
+# Databases
+*.db
+
 # Build directories
 build/
 Build/
