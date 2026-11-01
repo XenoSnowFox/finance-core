@@ -19,6 +19,10 @@ enum class ConnectionFlag {
   /// `READ_WRITE`.
   CREATE = SQLITE_OPEN_CREATE,
 
+  /// @brief Only create the database if the file does not already exist.
+  /// Must be used with `CREATE`.
+  EXCLUSIVE = SQLITE_OPEN_EXCLUSIVE,
+
   /// @brief Causes the filename parameter to be interpreted as a URI according
   /// to RFC 3986 guidelines.
   URI = SQLITE_OPEN_URI,

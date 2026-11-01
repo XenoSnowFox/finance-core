@@ -34,6 +34,7 @@ add_library(SQLite::SQLite3 ALIAS sqlite3)
 # ------------------------------------------------------------------------------
 add_executable(finance_core
     src/main.cpp
+    src/command/database_commands.cpp
 )
 
 target_include_directories(finance_core PRIVATE

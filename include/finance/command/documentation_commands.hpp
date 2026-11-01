@@ -249,6 +249,14 @@ private:
     return label;
   }
 
+  /// @brief Formats a positional argument's display name.
+  /// @param argument Positional argument metadata to format.
+  /// @return A display label such as `<filename>`.
+  static std::string positionalArgumentLabel(
+      const PositionalArgumentParser &argument) {
+    return "<" + argument.name + ">";
+  }
+
   /// @brief Collects every descendant command in traversal order.
   /// @param parser Root of the command subtree to traverse.
   /// @param commands Receives pointers to the collected commands.
@@ -484,6 +492,11 @@ private:
       if (!command->subcommand_parsers.empty()) {
         output << " <em>SUBCOMMAND</em> [<em>ARGS</em>...]";
       }
+      if (command->positional_argument_parser) {
+        output << " [<em>"
+               << htmlEscape(command->positional_argument_parser->name)
+               << "</em>]";
+      }
       output << "</code>\n";
     }
   }
@@ -499,8 +512,17 @@ private:
     }
     output << "</dt>\n        <dd>" << htmlEscape(command.summary);
     if (!command.argument_parsers.empty() ||
+        command.positional_argument_parser ||
         !command.subcommand_parsers.empty()) {
       output << "\n          <dl>\n";
+      if (command.positional_argument_parser) {
+        output << "            <dt>"
+               << htmlEscape(positionalArgumentLabel(
+                      *command.positional_argument_parser))
+               << " (optional)</dt>\n            <dd>"
+               << htmlEscape(command.positional_argument_parser->summary)
+               << "</dd>\n";
+      }
       for (const ArgumentParser &argument : command.argument_parsers) {
         output << "            <dt>" << htmlEscape(argumentLabel(argument))
                << "</dt>\n            <dd>" << htmlEscape(argument.summary)
@@ -600,6 +622,12 @@ private:
       if (!command->subcommand_parsers.empty()) {
         output << " SUBCOMMAND [ARGS...]";
       }
+      if (command->positional_argument_parser) {
+        output << " ["
+               << positionalArgumentLabel(
+                      *command->positional_argument_parser)
+               << "]";
+      }
       output << '\n';
     }
   }
@@ -616,6 +644,13 @@ private:
       output << " SUBCOMMAND";
     }
     output << "** — " << command.summary << '\n';
+    if (command.positional_argument_parser) {
+      output << std::string((depth + 1) * 2, ' ') << "- `"
+             << positionalArgumentLabel(
+                    *command.positional_argument_parser)
+             << "` (optional) — "
+             << command.positional_argument_parser->summary << '\n';
+    }
     for (const ArgumentParser &argument : command.argument_parsers) {
       output << std::string((depth + 1) * 2, ' ') << "- `"
              << argumentLabel(argument) << "` — " << argument.summary << '\n';
@@ -697,6 +732,13 @@ private:
       output << "\n"
              << std::string((indentation + 1) * 2, ' ') << command->summary
              << '\n';
+      if (command->positional_argument_parser) {
+        writePlainOption(
+            output,
+            positionalArgumentLabel(*command->positional_argument_parser) +
+                " (optional)",
+            command->positional_argument_parser->summary, indentation + 1);
+      }
       for (const ArgumentParser &argument : command->argument_parsers) {
         writePlainOption(output, argumentLabel(argument), argument.summary,
                          indentation + 1);
@@ -756,6 +798,13 @@ private:
                                const CommandParser &parser) {
     for (const auto &command : parser.subcommand_parsers) {
       writeManOption(output, command->name, command->summary);
+      if (command->positional_argument_parser) {
+        writeManOption(
+            output,
+            positionalArgumentLabel(*command->positional_argument_parser) +
+                " (optional)",
+            command->positional_argument_parser->summary);
+      }
       for (const ArgumentParser &argument : command->argument_parsers) {
         writeManOption(output, argumentLabel(argument), argument.summary);
       }

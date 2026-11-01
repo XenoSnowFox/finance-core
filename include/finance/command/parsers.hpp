@@ -32,6 +32,18 @@ struct ArgumentParser {
   const std::function<void(std::queue<std::string> &)> callback;
 };
 
+/// @brief Describes one positional command-line argument.
+struct PositionalArgumentParser {
+  /// @brief Name displayed for the argument.
+  const std::string name;
+
+  /// @brief Short description shown in help and generated documentation.
+  const std::string summary;
+
+  /// @brief Processes the value supplied for the argument.
+  const std::function<void(const std::string &)> callback;
+};
+
 /// @brief Describes a command-line example for generated documentation.
 struct CommandExample {
   /// Explanation displayed with the example.
@@ -55,16 +67,21 @@ public:
   /// @param argument_parsers Options and callbacks supported by the command.
   /// @param subcommand_parsers Parsers for commands nested under this command.
   /// @param examples Examples associated with this command.
+  /// @param positional_argument_parser Optional positional argument supported
+  /// by this command.
   CommandParser(std::string name, std::string summary,
                 CommandParser *parent_command_parser,
                 std::vector<ArgumentParser> argument_parsers,
                 std::vector<std::shared_ptr<CommandParser>> subcommand_parsers,
-                std::vector<CommandExample> examples = {})
+                std::vector<CommandExample> examples = {},
+                std::optional<PositionalArgumentParser>
+                    positional_argument_parser = std::nullopt)
       : name(std::move(name)), summary(std::move(summary)),
         parent_command_parser(parent_command_parser),
         argument_parsers(std::move(argument_parsers)),
         subcommand_parsers(std::move(subcommand_parsers)),
-        examples(std::move(examples)) {}
+        examples(std::move(examples)),
+        positional_argument_parser(std::move(positional_argument_parser)) {}
 
   /// @brief Command name recognized by this parser.
   const std::string name;
@@ -84,15 +101,21 @@ public:
   /// @brief Examples associated with this command.
   const std::vector<CommandExample> examples;
 
+  /// @brief Optional positional argument supported by this command.
+  const std::optional<PositionalArgumentParser> positional_argument_parser;
+
   /// @brief Parses queued tokens and dispatches options or subcommands.
   ///
   /// Matched tokens are removed from the queue. Option callbacks receive the
-  /// remaining tokens; if no subcommand is selected, this command's execution
-  /// hook runs after parsing completes. Help options print help and terminate
-  /// successfully.
+  /// remaining tokens. If no option or subcommand matches, a positional
+  /// argument is dispatched when configured. If no subcommand is selected,
+  /// this command's execution hook runs after parsing completes. Help options
+  /// print help and terminate successfully.
   /// @param args Queue of command-line tokens to consume.
   /// @return The command's execution result, or `1` for an unrecognized token.
   int parse(std::queue<std::string> &args) const {
+    bool positional_argument_consumed = false;
+
     // iterate over the remaining arguments in the queue by popping the nextitem
     while (!args.empty()) {
       // remove the next keyword
@@ -110,6 +133,11 @@ public:
       if (const std::optional<int> result =
               this->dispatchCommandParsers(keyword, args)) {
         return *result;
+      }
+
+      if (this->dispatchPositionalArgument(keyword,
+                                           positional_argument_consumed)) {
+        continue;
       }
 
       std::cerr << "Error: unrecognized command or option '" << keyword
@@ -171,6 +199,9 @@ protected:
     if (!subcommand_parsers.empty()) {
       std::cout << " <COMMAND>";
     }
+    if (positional_argument_parser) {
+      std::cout << " [<" << positional_argument_parser->name << ">]";
+    }
     std::cout << "\n\n" << summary << "\n\nOptions:\n";
 
     std::cout << "  " << std::left
@@ -180,6 +211,14 @@ protected:
       std::cout << "  " << std::left
                 << std::setw(static_cast<int>(option_width + 2))
                 << option_labels[i + 1] << argument_parsers[i].summary << '\n';
+    }
+
+    if (positional_argument_parser) {
+      const std::string label =
+          "<" + positional_argument_parser->name + ">";
+      std::cout << "\nArguments:\n  " << std::left
+                << std::setw(static_cast<int>(label.size() + 2)) << label
+                << positional_argument_parser->summary << '\n';
     }
 
     if (!subcommand_parsers.empty()) {
@@ -236,6 +275,22 @@ private:
 
     // we found no argument matches
     return false;
+  }
+
+  /// @brief Dispatches a token to this command's positional argument.
+  /// @param value Token being checked as a positional argument.
+  /// @param argument_consumed Whether this command already consumed its
+  /// positional argument.
+  /// @return `true` when the positional argument callback was invoked.
+  bool dispatchPositionalArgument(const std::string &value,
+                                  bool &argument_consumed) const {
+    if (!positional_argument_parser || argument_consumed) {
+      return false;
+    }
+
+    positional_argument_parser->callback(value);
+    argument_consumed = true;
+    return true;
   }
 
   /// @brief Dispatches a command name to its matching subcommand parser.
