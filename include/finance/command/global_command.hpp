@@ -25,6 +25,15 @@ struct GlobalCommandParser : CommandParser {
                             .callback =
                                 [this](std::queue<std::string> &args) {
                                   this->verbose_logging = true;
+                                }},
+             ArgumentParser{.keywords = {"-d", "--database"},
+                            .argument_name = "filename",
+                            .summary = "Use this database file. Defaults to "
+                                       "./default.db.",
+                            .callback =
+                                [this](std::queue<std::string> &args) {
+                                  this->database_filename = args.front();
+                                  args.pop();
                                 }}},
             {std::make_shared<DocumentationCommandParser>(*this),
              std::make_shared<CurrencyCommandParser>(*this)},
@@ -33,6 +42,11 @@ struct GlobalCommandParser : CommandParser {
 
   /// @brief Whether verbose logging is enabled by a global option.
   bool verbose_logging = false;
+
+  /// @brief Database file selected by `-d` or `--database`.
+  ///
+  /// Defaults to `./default.db` when no database option is provided.
+  std::string database_filename = "./default.db";
 };
 
 /// @brief Process-wide root command parser used by the application entry point.
