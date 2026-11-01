@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/build/_deps/sqlite_amalgamation-src",
+        "${workspaceFolder}/build/_deps/json-src/include"
+      ],
+      "cppStandard": "c++20"
+    }
+  ],
+  "version": 4
+}
