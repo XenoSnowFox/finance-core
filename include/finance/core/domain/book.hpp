@@ -2,11 +2,17 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
+
+#include "finance/core/domain/currency.hpp"
+#include "finance/core/repository/currency_repository.hpp"
 
 namespace finance::core::domain {
-class Book {
+class Book : public repository::CurrencyRepository {
 public:
-  static const char VERSION = 0;
+  static const std::uint8_t VERSION = 0;
+
+  static const std::uint8_t RECORD_CURRENCY = 1;
 
   /**
    * @brief

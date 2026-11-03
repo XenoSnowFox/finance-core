@@ -18,18 +18,76 @@ public:
    *
    * The deserialization constructor consumes this byte but does not verify it.
    */
-  static const char VERSION = 0;
+  static const std::uint8_t VERSION = 0;
+
+  /**
+   * @brief Common precision for currencies with no fractional digits.
+   */
+  static const std::uint8_t ZERO_DECIMAL_PLACES = 0;
 
   /**
    * @brief Common precision for currencies with two fractional digits.
    */
-  static const unsigned char TWO_DECIMAL_PLACES = static_cast<unsigned char>(2);
+  static const std::uint8_t TWO_DECIMAL_PLACES = 2;
+
+  /**
+   * @brief Common precision for currencies with three fractional digits.
+   */
+  static const std::uint8_t THREE_DECIMAL_PLACES = 3;
+
+  /**
+   * @brief Currency metadata for Australian dollars (AUD), using $ and 2
+   * fractional digits.
+   */
+  static const Currency AUSTRALIAN_DOLLAR;
+
+  /**
+   * @brief Currency metadata for US dollars (USD), using $ and 2 fractional
+   * digits.
+   */
+  static const Currency US_DOLLAR;
+
+  /**
+   * @brief Currency metadata for euros (EUR), using € and 2 fractional digits.
+   */
+  static const Currency EURO;
+
+  /**
+   * @brief Currency metadata for pound sterling (GBP), using £ and 2
+   * fractional digits.
+   */
+  static const Currency POUND_STERLING;
+
+  /**
+   * @brief Currency metadata for Japanese yen (JPY), using ¥ and no
+   * fractional digits.
+   */
+  static const Currency JAPANESE_YEN;
+
+  /**
+   * @brief Currency metadata for Canadian dollars (CAD), using $ and 2
+   * fractional digits.
+   */
+  static const Currency CANADIAN_DOLLAR;
+
+  /**
+   * @brief Currency metadata for Swiss francs (CHF), using Fr and 2 fractional
+   * digits.
+   */
+  static const Currency SWISS_FRANC;
+
+  /**
+   * @brief Currency metadata for Chinese yuan renminbi (CNY), using ¥ and 2
+   * fractional digits.
+   */
+  static const Currency CHINESE_YUAN_RENMINBI;
 
   /**
    * @brief Constructs currency metadata from its code, symbol, and precision.
    * @param aCode Currency code, stored without validation.
    * @param aSymbol Display symbol, stored without validation.
-   * @param aDecimalPlaces Number of fractional digits, stored without validation.
+   * @param aDecimalPlaces Number of fractional digits, stored without
+   * validation.
    */
   Currency(std::string aCode, std::string aSymbol, unsigned char aDecimalPlaces)
       : code(aCode), symbol(aSymbol), decimal_places(aDecimalPlaces) {};
@@ -38,9 +96,9 @@ public:
    * @brief Restores currency metadata from a serialized record.
    * @param arInputStream Input positioned at the start of a serialized record.
    *
-   * The record contains a version byte, a 32-bit code length and the code
-   * bytes, a precision byte, then a 32-bit symbol length and the symbol bytes.
-   * Lengths are encoded in the host byte order.
+   * The record contains a version byte, a one-byte code length and the code
+   * bytes, a precision byte, then a one-byte symbol length and the symbol
+   * bytes. Each length can represent at most 255 bytes.
    *
    * @note The version and record contents are not validated. The input must
    * contain a complete record in a compatible byte order.
@@ -53,27 +111,28 @@ public:
    * @param arCurrency Currency metadata to serialize.
    * @return The output stream, allowing chained writes.
    *
-   * Writes the version byte, length-prefixed code, precision byte, and
-   * length-prefixed symbol. Lengths are 32-bit unsigned integers in the host
-   * byte order; strings longer than that length can represent are not
-   * serialized faithfully.
+   * Writes the version byte, one-byte-length-prefixed code, precision byte,
+   * and one-byte-length-prefixed symbol. Each length can represent at most
+   * 255 bytes; longer strings are not serialized faithfully.
    */
   friend std::ostream &operator<<(std::ostream &arOutputStream,
                                   const Currency &arCurrency);
 
   /**
-   * @brief Currency code, commonly a three-letter code such as AUD, USD, or JPY.
+   * @brief Currency code, commonly a three-letter code such as AUD, USD, or
+   * JPY.
    *
    * The value is not checked against a currency-code standard.
    */
   std::string code;
 
   /**
-   * @brief Number of fractional digits used to represent amounts in this currency.
+   * @brief Number of fractional digits used to represent amounts in this
+   * currency.
    *
    * Defaults to 2. The value is stored without range validation.
    */
-  unsigned char decimal_places{2};
+  std::uint8_t decimal_places{2};
 
   /**
    * @brief Display symbol for this currency, such as $ or ¥.
