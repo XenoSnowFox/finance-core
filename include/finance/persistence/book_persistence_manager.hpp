@@ -28,6 +28,24 @@ public:
       : mFilename(std::move(aFilename)) {}
 
   /**
+   * @brief Creates a new empty Book file without replacing an existing file.
+   *
+   * @throws std::filesystem::filesystem_error If the target already exists or
+   * a filesystem operation fails.
+   * @throws std::ios_base::failure If the new Book cannot be saved.
+   */
+  void create() {
+    const std::filesystem::path filename(mFilename);
+    if (std::filesystem::exists(filename)) {
+      throw std::filesystem::filesystem_error(
+          "Book file already exists", filename,
+          std::make_error_code(std::errc::file_exists));
+    }
+
+    transaction([](core::domain::Book &) {});
+  }
+
+  /**
    * @brief Applies a callback to the loaded Book and saves it when the callback
    * returns successfully.
    * @param aCallback Operation to apply to the Book.
@@ -41,8 +59,7 @@ public:
    * @throws std::ios_base::failure If an existing Book cannot be opened, read,
    * or saved.
    */
-  void transaction(
-      const std::function<void(core::domain::Book &)> &aCallback) {
+  void transaction(const std::function<void(core::domain::Book &)> &aCallback) {
     core::domain::Book book = loadBook();
     aCallback(book);
 
@@ -88,7 +105,7 @@ public:
    * @throws std::ios_base::failure If an existing Book cannot be opened or
    * read.
    */
-  void readonly(
+  void readOnly(
       const std::function<void(const core::domain::Book &)> &aCallback) const {
     const core::domain::Book book = loadBook();
     aCallback(book);

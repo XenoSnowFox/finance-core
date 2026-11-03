@@ -74,17 +74,22 @@ public:
    * @param argument_parsers Options and callbacks supported by the command.
    * @param subcommand_parsers Parsers for commands nested under this command.
    * @param examples Examples associated with this command.
+   * @param positional_argument_name Optional name of a single positional
+   * argument accepted by this command.
    */
   CommandParser(std::string name, std::string summary,
                 CommandParser *parent_command_parser,
                 std::vector<ArgumentParser> argument_parsers,
                 std::vector<std::shared_ptr<CommandParser>> subcommand_parsers,
-                std::vector<CommandExample> examples = {})
+                std::vector<CommandExample> examples = {},
+                std::optional<std::string> positional_argument_name =
+                    std::nullopt)
       : name(std::move(name)), summary(std::move(summary)),
         parent_command_parser(parent_command_parser),
         argument_parsers(std::move(argument_parsers)),
         subcommand_parsers(std::move(subcommand_parsers)),
-        examples(std::move(examples)) {}
+        examples(std::move(examples)),
+        positional_argument_name(std::move(positional_argument_name)) {}
 
   /**
    * @brief Command name recognized by this parser.
@@ -117,6 +122,11 @@ public:
   const std::vector<CommandExample> examples;
 
   /**
+   * @brief Name of the optional positional argument accepted by this command.
+   */
+  const std::optional<std::string> positional_argument_name;
+
+  /**
    * @brief Parses queued tokens and dispatches options or subcommands.
    *
    * Matched tokens are removed from the queue. Option callbacks receive the
@@ -127,6 +137,8 @@ public:
    * @return The command's execution result, or `1` for an unrecognized token.
    */
   int parse(std::queue<std::string> &args) const {
+    std::optional<std::string> positional_argument;
+
     // iterate over the remaining arguments in the queue by popping the nextitem
     while (!args.empty()) {
       // remove the next keyword
@@ -146,15 +158,31 @@ public:
         return *result;
       }
 
+      if (positional_argument_name && !positional_argument) {
+        positional_argument = keyword;
+        continue;
+      }
+
       std::cerr << "Error: unrecognized command or option '" << keyword
                 << "' for '" << name << "'.\n";
       return 1;
     }
 
-    return executeCommand();
+    return executeCommand(positional_argument);
   };
 
 protected:
+  /**
+   * @brief Executes this command after options and positional arguments parse.
+   * @param aPositionalArgument Parsed positional argument, if provided.
+   * @return The command result; by default, delegates to executeCommand().
+   */
+  virtual int
+  executeCommand(const std::optional<std::string> &aPositionalArgument) const {
+    static_cast<void>(aPositionalArgument);
+    return executeCommand();
+  }
+
   /**
    * @brief Executes this command after its options have been parsed.
    *
@@ -208,6 +236,9 @@ protected:
     std::cout << " [OPTIONS]";
     if (!subcommand_parsers.empty()) {
       std::cout << " <COMMAND>";
+    }
+    if (positional_argument_name) {
+      std::cout << " [<" << *positional_argument_name << ">]";
     }
     std::cout << "\n\n" << summary << "\n\nOptions:\n";
 

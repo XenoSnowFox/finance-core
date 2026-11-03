@@ -522,6 +522,11 @@ private:
       if (!command->subcommand_parsers.empty()) {
         output << " <em>SUBCOMMAND</em> [<em>ARGS</em>...]";
       }
+      if (command->positional_argument_name) {
+        output << " [<em>"
+               << htmlEscape(*command->positional_argument_name)
+               << "</em>]";
+      }
       output << "</code>\n";
     }
   }
@@ -534,6 +539,10 @@ private:
   static void writeHTMLCommand(std::ostream &output,
                                const CommandParser &command) {
     output << "        <dt>" << htmlEscape(command.name);
+    if (command.positional_argument_name) {
+      output << " [<em>"
+             << htmlEscape(*command.positional_argument_name) << "</em>]";
+    }
     if (!command.subcommand_parsers.empty()) {
       output << " <em>SUBCOMMAND</em>";
     }
@@ -650,6 +659,9 @@ private:
       if (!command->subcommand_parsers.empty()) {
         output << " SUBCOMMAND [ARGS...]";
       }
+      if (command->positional_argument_name) {
+        output << " [" << *command->positional_argument_name << "]";
+      }
       output << '\n';
     }
   }
@@ -664,6 +676,9 @@ private:
                                    const CommandParser &command,
                                    std::size_t depth) {
     output << std::string(depth * 2, ' ') << "- **" << command.name;
+    if (command.positional_argument_name) {
+      output << " [" << *command.positional_argument_name << "]";
+    }
     if (!command.subcommand_parsers.empty()) {
       output << " SUBCOMMAND";
     }
@@ -753,6 +768,9 @@ private:
                                  std::size_t indentation) {
     for (const auto &command : parser.subcommand_parsers) {
       output << std::string(indentation * 2, ' ') << command->name;
+      if (command->positional_argument_name) {
+        output << " [" << *command->positional_argument_name << "]";
+      }
       if (!command->subcommand_parsers.empty()) {
         output << " SUBCOMMAND";
       }
@@ -825,7 +843,11 @@ private:
   static void writeManCommands(std::ostream &output,
                                const CommandParser &parser) {
     for (const auto &command : parser.subcommand_parsers) {
-      writeManOption(output, command->name, command->summary);
+      std::string label = command->name;
+      if (command->positional_argument_name) {
+        label += " [" + *command->positional_argument_name + "]";
+      }
+      writeManOption(output, label, command->summary);
       for (const ArgumentParser &argument : command->argument_parsers) {
         writeManOption(output, argumentLabel(argument), argument.summary);
       }

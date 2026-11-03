@@ -70,6 +70,10 @@ if(BUILD_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
 
+    target_compile_definitions(finance_core_tests PRIVATE
+        FINANCE_CORE_VERSION="${PROJECT_VERSION}"
+    )
+
     target_link_libraries(finance_core_tests PRIVATE doctest::doctest)
 
     include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)

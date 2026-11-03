@@ -5,10 +5,10 @@
 #include <queue>
 #include <string>
 
+#include "finance/command/book_commands.hpp"
 #include "finance/command/currency_commands.hpp"
 #include "finance/command/documentation_commands.hpp"
 #include "finance/command/parsers.hpp"
-#include "finance/persistence/book_persistence_manager.hpp"
 
 namespace finance::command {
 
@@ -42,13 +42,13 @@ struct GlobalCommandParser : CommandParser {
                         [this](std::queue<std::string> &args) {
                           const std::string filename = args.front();
                           args.pop();
-                          this->book_persistence_manager =
-                              persistence::BookPersistenceManager{filename};
+                          this->book_filename = filename;
                         }},
             },
             {
                 std::make_shared<DocumentationCommandParser>(*this),
                 std::make_shared<CurrencyCommandParser>(*this),
+                std::make_shared<BookCommandParser>(*this),
             },
             {
                 CommandExample{"Display the available commands and options.",
@@ -64,8 +64,7 @@ struct GlobalCommandParser : CommandParser {
    */
   bool verbose_logging = false;
 
-  persistence::BookPersistenceManager book_persistence_manager{
-      "./default.book"};
+  std::string book_filename = "./default.book";
 };
 
 /**
