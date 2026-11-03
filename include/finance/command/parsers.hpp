@@ -14,85 +14,131 @@
 
 namespace finance::command {
 
-/// @brief Describes a command-line option and how to process it.
-///
-/// The callback receives the remaining command-line tokens after one of the
-/// option's keywords has been removed.
+/**
+ * @brief Describes a command-line option and how to process it.
+ *
+ * The callback receives the remaining command-line tokens after one of the
+ * option's keywords has been removed.
+ */
 struct ArgumentParser {
-  /// Keywords that identify the option, such as `-s` or `--something`.
+  /**
+   * Keywords that identify the option, such as `-s` or `--something`.
+   */
   const std::vector<std::string> keywords;
 
-  /// Name of the value expected after the option, if it takes a value.
+  /**
+   * Name of the value expected after the option, if it takes a value.
+   */
   const std::optional<std::string> argument_name;
 
-  /// Short description shown in help and generated documentation.
+  /**
+   * Short description shown in help and generated documentation.
+   */
   const std::string summary;
 
-  /// Processes remaining command-line tokens after a keyword is matched.
+  /**
+   * Processes remaining command-line tokens after a keyword is matched.
+   */
   const std::function<void(std::queue<std::string> &)> callback;
 };
 
-/// @brief Describes a command-line example for generated documentation.
+/**
+ * @brief Describes a command-line example for generated documentation.
+ */
 struct CommandExample {
-  /// Explanation displayed with the example.
+  /**
+   * Explanation displayed with the example.
+   */
   const std::string description;
 
-  /// Command line shown as the example.
+  /**
+   * Command line shown as the example.
+   */
   const std::string command;
 };
 
-/// @brief Stores metadata and parsers for one command in the command tree.
-///
-/// Options are dispatched to their callbacks, and nested parsers represent
-/// subcommands. The metadata is also used to generate help and documentation.
+/**
+ * @brief Stores metadata and parsers for one command in the command tree.
+ *
+ * Options are dispatched to their callbacks, and nested parsers represent
+ * subcommands. The metadata is also used to generate help and documentation.
+ */
 struct CommandParser {
 public:
-  /// @brief Creates a parser with its metadata, options, and subcommands.
-  /// @param name Command name recognized by this parser.
-  /// @param summary Short description of the command.
-  /// @param parent_command_parser Non-owning pointer to the parent parser, or
-  /// `nullptr` for the root parser.
-  /// @param argument_parsers Options and callbacks supported by the command.
-  /// @param subcommand_parsers Parsers for commands nested under this command.
-  /// @param examples Examples associated with this command.
+  /**
+   * @brief Creates a parser with its metadata, options, and subcommands.
+   * @param name Command name recognized by this parser.
+   * @param summary Short description of the command.
+   * @param parent_command_parser Non-owning pointer to the parent parser, or
+   * `nullptr` for the root parser.
+   * @param argument_parsers Options and callbacks supported by the command.
+   * @param subcommand_parsers Parsers for commands nested under this command.
+   * @param examples Examples associated with this command.
+   * @param positional_argument_name Optional name of a single positional
+   * argument accepted by this command.
+   */
   CommandParser(std::string name, std::string summary,
                 CommandParser *parent_command_parser,
                 std::vector<ArgumentParser> argument_parsers,
                 std::vector<std::shared_ptr<CommandParser>> subcommand_parsers,
-                std::vector<CommandExample> examples = {})
+                std::vector<CommandExample> examples = {},
+                std::optional<std::string> positional_argument_name =
+                    std::nullopt)
       : name(std::move(name)), summary(std::move(summary)),
         parent_command_parser(parent_command_parser),
         argument_parsers(std::move(argument_parsers)),
         subcommand_parsers(std::move(subcommand_parsers)),
-        examples(std::move(examples)) {}
+        examples(std::move(examples)),
+        positional_argument_name(std::move(positional_argument_name)) {}
 
-  /// @brief Command name recognized by this parser.
+  /**
+   * @brief Command name recognized by this parser.
+   */
   const std::string name;
 
-  /// @brief Short description used in help and generated documentation.
+  /**
+   * @brief Short description used in help and generated documentation.
+   */
   const std::string summary;
 
-  /// @brief Non-owning pointer to the parent parser, or `nullptr` for the root.
+  /**
+   * @brief Non-owning pointer to the parent parser, or `nullptr` for the root.
+   */
   CommandParser *const parent_command_parser;
 
-  /// @brief Options recognized by this command.
+  /**
+   * @brief Options recognized by this command.
+   */
   const std::vector<ArgumentParser> argument_parsers;
 
-  /// @brief Parsers for subcommands nested under this command.
+  /**
+   * @brief Parsers for subcommands nested under this command.
+   */
   const std::vector<std::shared_ptr<CommandParser>> subcommand_parsers;
 
-  /// @brief Examples associated with this command.
+  /**
+   * @brief Examples associated with this command.
+   */
   const std::vector<CommandExample> examples;
 
-  /// @brief Parses queued tokens and dispatches options or subcommands.
-  ///
-  /// Matched tokens are removed from the queue. Option callbacks receive the
-  /// remaining tokens; if no subcommand is selected, this command's execution
-  /// hook runs after parsing completes. Help options print help and terminate
-  /// successfully.
-  /// @param args Queue of command-line tokens to consume.
-  /// @return The command's execution result, or `1` for an unrecognized token.
+  /**
+   * @brief Name of the optional positional argument accepted by this command.
+   */
+  const std::optional<std::string> positional_argument_name;
+
+  /**
+   * @brief Parses queued tokens and dispatches options or subcommands.
+   *
+   * Matched tokens are removed from the queue. Option callbacks receive the
+   * remaining tokens; if no subcommand is selected, this command's execution
+   * hook runs after parsing completes. Help options print help and terminate
+   * successfully.
+   * @param args Queue of command-line tokens to consume.
+   * @return The command's execution result, or `1` for an unrecognized token.
+   */
   int parse(std::queue<std::string> &args) const {
+    std::optional<std::string> positional_argument;
+
     // iterate over the remaining arguments in the queue by popping the nextitem
     while (!args.empty()) {
       // remove the next keyword
@@ -112,28 +158,48 @@ public:
         return *result;
       }
 
+      if (positional_argument_name && !positional_argument) {
+        positional_argument = keyword;
+        continue;
+      }
+
       std::cerr << "Error: unrecognized command or option '" << keyword
                 << "' for '" << name << "'.\n";
       return 1;
     }
 
-    return executeCommand();
+    return executeCommand(positional_argument);
   };
 
 protected:
-  /// @brief Executes this command after its options have been parsed.
-  ///
-  /// Override this method in a derived parser to provide command behavior.
-  /// @return Command result code; the default implementation returns `1`.
+  /**
+   * @brief Executes this command after options and positional arguments parse.
+   * @param aPositionalArgument Parsed positional argument, if provided.
+   * @return The command result; by default, delegates to executeCommand().
+   */
+  virtual int
+  executeCommand(const std::optional<std::string> &aPositionalArgument) const {
+    static_cast<void>(aPositionalArgument);
+    return executeCommand();
+  }
+
+  /**
+   * @brief Executes this command after its options have been parsed.
+   *
+   * Override this method in a derived parser to provide command behavior.
+   * @return Command result code; the default implementation returns `1`.
+   */
   virtual int executeCommand() const {
     std::cerr << "Error: no action is defined for command '" << name << "'.\n";
     return 1;
   }
 
-  /// @brief Prints this parser's help text and exits successfully.
-  ///
-  /// The output includes this command's usage, options, and subcommands, using
-  /// the metadata registered on this parser.
+  /**
+   * @brief Prints this parser's help text and exits successfully.
+   *
+   * The output includes this command's usage, options, and subcommands, using
+   * the metadata registered on this parser.
+   */
   virtual void printHelpDocumentation() const {
     std::vector<std::string> command_path;
     for (const CommandParser *parser = this; parser != nullptr;
@@ -171,6 +237,9 @@ protected:
     if (!subcommand_parsers.empty()) {
       std::cout << " <COMMAND>";
     }
+    if (positional_argument_name) {
+      std::cout << " [<" << *positional_argument_name << ">]";
+    }
     std::cout << "\n\n" << summary << "\n\nOptions:\n";
 
     std::cout << "  " << std::left
@@ -202,10 +271,12 @@ protected:
   }
 
 private:
-  /// @brief Handles a help keyword by printing help for this parser.
-  /// @param keyword Token being checked for a help option.
-  /// @param args Remaining tokens; unused because help exits immediately.
-  /// @return `true` when help was printed; otherwise `false`.
+  /**
+   * @brief Handles a help keyword by printing help for this parser.
+   * @param keyword Token being checked for a help option.
+   * @param args Remaining tokens; unused because help exits immediately.
+   * @return `true` when help was printed; otherwise `false`.
+   */
   bool dispatchHelpDocumentation(const std::string &keyword,
                                  std::queue<std::string> &args) const {
     if (keyword == "-h" || keyword == "--help") {
@@ -215,11 +286,13 @@ private:
     return false;
   }
 
-  /// @brief Dispatches a keyword to a matching argument callback.
-  /// @param keyword Keyword to match against the registered arguments.
-  /// @param args Remaining command-line tokens passed to the callback.
-  /// @return `true` if a matching argument callback was invoked; otherwise
-  /// `false`.
+  /**
+   * @brief Dispatches a keyword to a matching argument callback.
+   * @param keyword Keyword to match against the registered arguments.
+   * @param args Remaining command-line tokens passed to the callback.
+   * @return `true` if a matching argument callback was invoked; otherwise
+   * `false`.
+   */
   bool dispatchArgumentParsers(const std::string &keyword,
                                std::queue<std::string> &args) const {
     // loop over the argument parsers
@@ -238,10 +311,12 @@ private:
     return false;
   }
 
-  /// @brief Dispatches a command name to its matching subcommand parser.
-  /// @param keyword Command name to match against the registered subcommands.
-  /// @param args Remaining command-line tokens passed to the subcommand parser.
-  /// @return The subcommand's result code if matched; otherwise `std::nullopt`.
+  /**
+   * @brief Dispatches a command name to its matching subcommand parser.
+   * @param keyword Command name to match against the registered subcommands.
+   * @param args Remaining command-line tokens passed to the subcommand parser.
+   * @return The subcommand's result code if matched; otherwise `std::nullopt`.
+   */
   std::optional<int>
   dispatchCommandParsers(const std::string &keyword,
                          std::queue<std::string> &args) const {

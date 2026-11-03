@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "finance/core/domain/account.hpp"
@@ -33,14 +34,22 @@ enum class TransactionEntryIdentifier : unsigned int {};
  */
 struct TransactionEntry : Identifiable<TransactionEntryIdentifier> {
   /**
+   * @brief Constructs an entry with its required currency metadata.
+   * @param currency Currency used to express the foreign amount.
+   */
+  explicit TransactionEntry(Currency currency)
+      : Identifiable<TransactionEntryIdentifier>{},
+        currency(std::move(currency)) {}
+
+  /**
    * @brief Identifier of the transaction containing this entry.
    */
-  TransactionIdentifier transaction_id;
+  TransactionIdentifier transaction_id{};
 
   /**
    * @brief Identifier of the account to which this entry is assigned.
    */
-  AccountIdentifier account_id;
+  AccountIdentifier account_id{};
 
   /**
    * @brief Optional identifier of the contact associated with this entry.
@@ -52,7 +61,7 @@ struct TransactionEntry : Identifiable<TransactionEntryIdentifier> {
   /**
    * @brief Currency in which @c foreign_amount is expressed.
    */
-  CurrencyInfo currency;
+  Currency currency;
 
   /**
    * @brief Entry amount expressed in @c currency.
