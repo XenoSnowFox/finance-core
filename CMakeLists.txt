@@ -21,8 +21,12 @@ include(FetchContent)
 # ------------------------------------------------------------------------------
 # Command-line application
 # ------------------------------------------------------------------------------
+file(GLOB_RECURSE FINANCE_CORE_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
 add_executable(finance_core
-    src/main.cpp
+    ${FINANCE_CORE_SOURCES}
 )
 
 target_include_directories(finance_core PRIVATE
@@ -34,7 +38,7 @@ target_compile_definitions(finance_core PRIVATE
 )
 
 # ------------------------------------------------------------------------------
-# Unit Testing (Catch2)
+# Unit Testing (doctest)
 # ------------------------------------------------------------------------------
 option(BUILD_TESTS "Build unit test suite for finance-core" ON)
 
@@ -42,22 +46,32 @@ if(BUILD_TESTS)
     enable_testing()
 
     FetchContent_Declare(
-        Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.16.1
+        doctest
+        GIT_REPOSITORY https://github.com/doctest/doctest.git
+        GIT_TAG        v2.4.12
     )
-    FetchContent_MakeAvailable(Catch2)
+    FetchContent_MakeAvailable(doctest)
 
-    add_executable(core_unit_tests
-        tests/test_transaction.cpp
+    file(GLOB_RECURSE FINANCE_CORE_TEST_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
     )
 
-    target_include_directories(core_unit_tests PRIVATE
+    set(FINANCE_CORE_TEST_IMPLEMENTATION_SOURCES ${FINANCE_CORE_SOURCES})
+    list(REMOVE_ITEM FINANCE_CORE_TEST_IMPLEMENTATION_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    )
+
+    add_executable(finance_core_tests
+        ${FINANCE_CORE_TEST_SOURCES}
+        ${FINANCE_CORE_TEST_IMPLEMENTATION_SOURCES}
+    )
+
+    target_include_directories(finance_core_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
 
-    target_link_libraries(core_unit_tests PRIVATE Catch2::Catch2WithMain)
+    target_link_libraries(finance_core_tests PRIVATE doctest::doctest)
 
-    include(Catch)
-    catch_discover_tests(core_unit_tests)
+    include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
+    doctest_discover_tests(finance_core_tests)
 endif()

@@ -47,7 +47,7 @@ struct Account : Identifiable<AccountIdentifier> {
   /**
    * @brief Currency used to record amounts for the account.
    */
-  CurrencyInfo currency;
+  Currency currency;
 };
 
 } // namespace finance::core::domain

@@ -14,6 +14,20 @@
 			"command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --target finance_core",
 			"group": "build",
 			"problemMatcher": "$gcc"
+		},
+		{
+			"label": "build-tests-debug-windows",
+			"type": "shell",
+			"command": "cmake -S . -B build -DBUILD_TESTS=ON; cmake --build build --config Debug --target finance_core_tests",
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "build-tests-debug-linux",
+			"type": "shell",
+			"command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON && cmake --build build --target finance_core_tests",
+			"group": "build",
+			"problemMatcher": "$gcc"
 		}
 	]
 }

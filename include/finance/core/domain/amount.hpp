@@ -72,14 +72,14 @@ public:
    * @brief Constructs an amount from currency minor units.
    *
    * The number of minor units is interpreted using the precision in
-   * @p currencyInfo. For currencies with two decimal places, these are cents.
+   * @p currency. For currencies with two decimal places, these are cents.
    * @param cents Value in the currency's minor units.
-   * @param currencyInfo Currency metadata providing the number of decimal
+   * @param currency Currency metadata providing the number of decimal
    * places.
    */
   [[nodiscard]] static constexpr Amount
-  from_cents(std::int64_t cents, CurrencyInfo &currencyInfo) noexcept {
-    return from_cents(cents, currencyInfo.decimal_places);
+  from_cents(std::int64_t cents, Currency &currency) noexcept {
+    return from_cents(cents, currency.decimal_places);
   }
 
   /**
@@ -102,14 +102,14 @@ public:
    * @brief Converts the amount to currency minor units, rounding to nearest.
    *
    * Half-unit values are rounded away from zero. The result is expressed
-   * according to the precision in @p currencyInfo; when the currency has two
+   * according to the precision in @p currency; when the currency has two
    * decimal places, the result is in cents.
-   * @param currencyInfo Currency metadata providing the number of decimal
+   * @param currency Currency metadata providing the number of decimal
    * places.
    */
   [[nodiscard]] constexpr std::int64_t
-  to_cents(CurrencyInfo &currencyInfo) const noexcept {
-    return to_cents(currencyInfo.decimal_places);
+  to_cents(Currency &currency) const noexcept {
+    return to_cents(currency.decimal_places);
   }
 
   /**

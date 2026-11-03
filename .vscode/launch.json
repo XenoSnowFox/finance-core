@@ -27,6 +27,72 @@
 				}
 			],
 			"preLaunchTask": "build-debug-linux"
+		},
+		{
+			"name": "Debug unit tests (Windows)",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/Debug/finance_core_tests.exe",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"console": "integratedTerminal",
+			"preLaunchTask": "build-tests-debug-windows"
+		},
+		{
+			"name": "Debug unit test case (Windows)",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/Debug/finance_core_tests.exe",
+			"args": [
+				"--test-suite=${input:doctestTestSuite}"
+			],
+			"cwd": "${workspaceFolder}",
+			"console": "integratedTerminal",
+			"preLaunchTask": "build-tests-debug-windows"
+		},
+		{
+			"name": "Debug unit tests (Linux)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/finance_core_tests",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-tests-debug-linux"
+		},
+		{
+			"name": "Debug unit test case (Linux)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/finance_core_tests",
+			"args": [
+				"--test-suite=${input:doctestTestSuite}"
+			],
+			"cwd": "${workspaceFolder}",
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-tests-debug-linux"
+		}
+	],
+	"inputs": [
+		{
+			"id": "doctestTestSuite",
+			"type": "promptString",
+			"description": "doctest test-suite filter (for example, \"core::domain::currency\")",
+			"default": "core::domain::currency"
 		}
 	]
 }
