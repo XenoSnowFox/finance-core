@@ -11,9 +11,13 @@
 
 namespace finance::command {
 
-/// @brief Root parser registering global options and top-level commands.
+/**
+ * @brief Root parser registering global options and top-level commands.
+ */
 struct GlobalCommandParser : CommandParser {
-  /// @brief Creates the finance-core command tree.
+  /**
+   * @brief Creates the finance-core command tree.
+   */
   GlobalCommandParser()
       : CommandParser{
             "finance_core",
@@ -31,11 +35,15 @@ struct GlobalCommandParser : CommandParser {
             {CommandExample{"Display the available commands and options.",
                             "finance-core --help"}}} {}
 
-  /// @brief Whether verbose logging is enabled by a global option.
+  /**
+   * @brief Whether verbose logging is enabled by a global option.
+   */
   bool verbose_logging = false;
 };
 
-/// @brief Process-wide root command parser used by the application entry point.
+/**
+ * @brief Process-wide root command parser used by the application entry point.
+ */
 inline GlobalCommandParser GLOBAL_COMMAND_PARSER;
 
 } // namespace finance::command

@@ -15,25 +15,39 @@
 
 namespace finance::command {
 
-/// @brief Output formats supported by the documentation command.
+/**
+ * @brief Output formats supported by the documentation command.
+ */
 enum OutputFormat {
-  /// Plain-text documentation written to a `.txt` file.
+  /**
+   * Plain-text documentation written to a `.txt` file.
+   */
   PLAIN_TEXT,
-  /// Single-page HTML documentation.
+  /**
+   * Single-page HTML documentation.
+   */
   HTML,
-  /// Markdown documentation.
+  /**
+   * Markdown documentation.
+   */
   MARKDOWN,
-  /// Unix manual-page documentation.
+  /**
+   * Unix manual-page documentation.
+   */
   MAN
 };
 
-/// @brief Parses `doc` options and writes documentation for the command tree.
-///
-/// The output includes registered commands, options, and examples, formatted
-/// according to the selected output format.
+/**
+ * @brief Parses `doc` options and writes documentation for the command tree.
+ *
+ * The output includes registered commands, options, and examples, formatted
+ * according to the selected output format.
+ */
 struct DocumentationCommandParser : CommandParser {
-  /// @brief Creates a documentation parser attached to its parent command.
-  /// @param parent_command_parser Parser for the command that owns `doc`.
+  /**
+   * @brief Creates a documentation parser attached to its parent command.
+   * @param parent_command_parser Parser for the command that owns `doc`.
+   */
   explicit DocumentationCommandParser(CommandParser &parent_command_parser)
       : CommandParser{
             "doc",
@@ -92,14 +106,20 @@ struct DocumentationCommandParser : CommandParser {
                             "finance-core doc --format html --output "
                             "docs/finance-core.html"}}} {}
 
-  /// Format selected by `--format`; defaults to plain text.
+  /**
+   * Format selected by `--format`; defaults to plain text.
+   */
   OutputFormat m_output_format = OutputFormat::PLAIN_TEXT;
 
-  /// Optional destination supplied through `-o` or `--output`.
+  /**
+   * Optional destination supplied through `-o` or `--output`.
+   */
   std::optional<std::string> m_output_filename = std::nullopt;
 
-  /// @brief Writes the selected documentation format to its destination.
-  /// @return `0` on success; `1` if option parsing or file output failed.
+  /**
+   * @brief Writes the selected documentation format to its destination.
+   * @return `0` on success; `1` if option parsing or file output failed.
+   */
   int executeCommand() const override {
     if (m_option_error) {
       return 1;
@@ -165,9 +185,11 @@ struct DocumentationCommandParser : CommandParser {
   }
 
 private:
-  /// @brief Escapes text for safe inclusion in HTML.
-  /// @param text Unescaped source text.
-  /// @return The HTML-escaped text.
+  /**
+   * @brief Escapes text for safe inclusion in HTML.
+   * @param text Unescaped source text.
+   * @return The HTML-escaped text.
+   */
   static std::string htmlEscape(const std::string &text) {
     std::string result;
     for (const char character : text) {
@@ -194,8 +216,10 @@ private:
     return result;
   }
 
-  /// @brief Gets the current local date formatted as a month and year.
-  /// @return The formatted generation date.
+  /**
+   * @brief Gets the current local date formatted as a month and year.
+   * @return The formatted generation date.
+   */
   static std::string currentDate() {
     const std::time_t now = std::time(nullptr);
     std::tm date{};
@@ -209,9 +233,11 @@ private:
     return result.str();
   }
 
-  /// @brief Builds the space-separated path from the root to a command.
-  /// @param parser Command whose path is requested.
-  /// @return The command path, including the root command name.
+  /**
+   * @brief Builds the space-separated path from the root to a command.
+   * @param parser Command whose path is requested.
+   * @return The command path, including the root command name.
+   */
   static std::string commandPath(const CommandParser &parser) {
     std::vector<std::string> command_names;
     for (const CommandParser *current = &parser; current != nullptr;
@@ -230,9 +256,11 @@ private:
     return path;
   }
 
-  /// @brief Formats an option's keywords and optional argument name.
-  /// @param argument Option metadata to format.
-  /// @return A display label such as `--output <filename>`.
+  /**
+   * @brief Formats an option's keywords and optional argument name.
+   * @param argument Option metadata to format.
+   * @return A display label such as `--output <filename>`.
+   */
   static std::string argumentLabel(const ArgumentParser &argument) {
     std::string label;
     for (std::size_t index = 0; index < argument.keywords.size(); ++index) {
@@ -249,9 +277,11 @@ private:
     return label;
   }
 
-  /// @brief Collects every descendant command in traversal order.
-  /// @param parser Root of the command subtree to traverse.
-  /// @param commands Receives pointers to the collected commands.
+  /**
+   * @brief Collects every descendant command in traversal order.
+   * @param parser Root of the command subtree to traverse.
+   * @param commands Receives pointers to the collected commands.
+   */
   static void collectCommands(const CommandParser &parser,
                               std::vector<const CommandParser *> &commands) {
     for (const auto &subcommand : parser.subcommand_parsers) {
@@ -260,9 +290,11 @@ private:
     }
   }
 
-  /// @brief Collects examples from a command and all its descendants.
-  /// @param parser Root of the command subtree to traverse.
-  /// @param examples Receives pointers to the collected examples.
+  /**
+   * @brief Collects examples from a command and all its descendants.
+   * @param parser Root of the command subtree to traverse.
+   * @param examples Receives pointers to the collected examples.
+   */
   static void collectExamples(const CommandParser &parser,
                               std::vector<const CommandExample *> &examples) {
     for (const CommandExample &example : parser.examples) {
@@ -273,12 +305,16 @@ private:
     }
   }
 
-  /// @brief Gets the project version configured by CMake.
-  /// @return The version prefixed with `v`.
+  /**
+   * @brief Gets the project version configured by CMake.
+   * @return The version prefixed with `v`.
+   */
   static std::string currentVersion() { return "v" FINANCE_CORE_VERSION; }
 
-  /// @brief Writes the complete HTML manual-page document.
-  /// @param output Stream receiving the generated document.
+  /**
+   * @brief Writes the complete HTML manual-page document.
+   * @param output Stream receiving the generated document.
+   */
   void writeHTMLDocumentation(std::ostream &output) const {
     const std::string page_name = htmlEscape(parent_command_parser->name);
     const std::string man_name = htmlEscape(parent_command_parser->name);
@@ -463,9 +499,11 @@ private:
 )";
   }
 
-  /// @brief Writes synopsis entries for the root and every registered command.
-  /// @param output Stream receiving the synopsis markup.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes synopsis entries for the root and every registered command.
+   * @param output Stream receiving the synopsis markup.
+   * @param root Root command parser.
+   */
   static void writeHTMLSynopsis(std::ostream &output,
                                 const CommandParser &root) {
     const std::string root_name = htmlEscape(root.name);
@@ -488,9 +526,11 @@ private:
     }
   }
 
-  /// @brief Writes one command and its options and nested subcommands as HTML.
-  /// @param output Stream receiving the command markup.
-  /// @param command Command parser to render.
+  /**
+   * @brief Writes one command and its options and nested subcommands as HTML.
+   * @param output Stream receiving the command markup.
+   * @param command Command parser to render.
+   */
   static void writeHTMLCommand(std::ostream &output,
                                const CommandParser &command) {
     output << "        <dt>" << htmlEscape(command.name);
@@ -514,9 +554,11 @@ private:
     output << "</dd>\n";
   }
 
-  /// @brief Writes the root command's full command hierarchy as HTML.
-  /// @param output Stream receiving the command markup.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes the root command's full command hierarchy as HTML.
+   * @param output Stream receiving the command markup.
+   * @param root Root command parser.
+   */
   static void writeHTMLCommands(std::ostream &output,
                                 const CommandParser &root) {
     output << "      <dl>\n";
@@ -526,9 +568,11 @@ private:
     output << "      </dl>\n";
   }
 
-  /// @brief Writes help and root-level options as HTML.
-  /// @param output Stream receiving the options markup.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes help and root-level options as HTML.
+   * @param output Stream receiving the options markup.
+   * @param root Root command parser.
+   */
   static void writeHTMLGlobalOptions(std::ostream &output,
                                      const CommandParser &root) {
     output << "      <dl>\n"
@@ -542,9 +586,11 @@ private:
     output << "      </dl>\n";
   }
 
-  /// @brief Writes examples from the root command tree as HTML.
-  /// @param output Stream receiving the examples markup.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes examples from the root command tree as HTML.
+   * @param output Stream receiving the examples markup.
+   * @param root Root command parser.
+   */
   static void writeHTMLExamples(std::ostream &output,
                                 const CommandParser &root) {
     std::vector<const CommandExample *> examples;
@@ -556,8 +602,10 @@ private:
     }
   }
 
-  /// @brief Writes the documentation as a Markdown manual page.
-  /// @param output Stream receiving the generated document.
+  /**
+   * @brief Writes the documentation as a Markdown manual page.
+   * @param output Stream receiving the generated document.
+   */
   void writeMarkdownDocumentation(std::ostream &output) const {
     const CommandParser &root = *parent_command_parser;
     output << "# " << root.name << "(1) — User Commands\n\n";
@@ -581,10 +629,12 @@ private:
            << root.name << "(1)\n";
   }
 
-  /// @brief Writes synopsis entries for the root and all descendant commands.
-  /// @param output Stream receiving the synopsis text.
-  /// @param root Root command parser.
-  /// @param indentation Prefix applied to each synopsis line.
+  /**
+   * @brief Writes synopsis entries for the root and all descendant commands.
+   * @param output Stream receiving the synopsis text.
+   * @param root Root command parser.
+   * @param indentation Prefix applied to each synopsis line.
+   */
   static void writePlainSynopsis(std::ostream &output,
                                  const CommandParser &root,
                                  const std::string &indentation = "") {
@@ -604,10 +654,12 @@ private:
     }
   }
 
-  /// @brief Writes a command and its options and subcommands as Markdown.
-  /// @param output Stream receiving the command list.
-  /// @param command Command parser to render.
-  /// @param depth Nesting depth used to indent the list.
+  /**
+   * @brief Writes a command and its options and subcommands as Markdown.
+   * @param output Stream receiving the command list.
+   * @param command Command parser to render.
+   * @param depth Nesting depth used to indent the list.
+   */
   static void writeMarkdownCommand(std::ostream &output,
                                    const CommandParser &command,
                                    std::size_t depth) {
@@ -625,9 +677,11 @@ private:
     }
   }
 
-  /// @brief Writes the root command's full command hierarchy as Markdown.
-  /// @param output Stream receiving the command list.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes the root command's full command hierarchy as Markdown.
+   * @param output Stream receiving the command list.
+   * @param root Root command parser.
+   */
   static void writeMarkdownCommands(std::ostream &output,
                                     const CommandParser &root) {
     for (const auto &command : root.subcommand_parsers) {
@@ -635,9 +689,11 @@ private:
     }
   }
 
-  /// @brief Writes examples from the root command tree as Markdown.
-  /// @param output Stream receiving the examples.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes examples from the root command tree as Markdown.
+   * @param output Stream receiving the examples.
+   * @param root Root command parser.
+   */
   static void writeMarkdownExamples(std::ostream &output,
                                     const CommandParser &root) {
     std::vector<const CommandExample *> examples;
@@ -648,8 +704,10 @@ private:
     }
   }
 
-  /// @brief Writes the documentation as plain text.
-  /// @param output Stream receiving the generated document.
+  /**
+   * @brief Writes the documentation as plain text.
+   * @param output Stream receiving the generated document.
+   */
   void writePlainTextDocumentation(std::ostream &output) const {
     const CommandParser &root = *parent_command_parser;
     output << root.name << "(1) — USER COMMANDS\n\n";
@@ -670,11 +728,13 @@ private:
            << "(1)\n";
   }
 
-  /// @brief Writes an indented option label and its description.
-  /// @param output Stream receiving the option entry.
-  /// @param label Display label for the option.
-  /// @param summary Description of the option.
-  /// @param indentation Indentation depth for the entry.
+  /**
+   * @brief Writes an indented option label and its description.
+   * @param output Stream receiving the option entry.
+   * @param label Display label for the option.
+   * @param summary Description of the option.
+   * @param indentation Indentation depth for the entry.
+   */
   static void writePlainOption(std::ostream &output, const std::string &label,
                                const std::string &summary,
                                std::size_t indentation) {
@@ -682,10 +742,12 @@ private:
            << std::string((indentation + 1) * 2, ' ') << summary << '\n';
   }
 
-  /// @brief Writes commands, options, and nested subcommands as plain text.
-  /// @param output Stream receiving the command tree.
-  /// @param parser Root of the command subtree to render.
-  /// @param indentation Indentation depth for the subtree.
+  /**
+   * @brief Writes commands, options, and nested subcommands as plain text.
+   * @param output Stream receiving the command tree.
+   * @param parser Root of the command subtree to render.
+   * @param indentation Indentation depth for the subtree.
+   */
   static void writePlainCommands(std::ostream &output,
                                  const CommandParser &parser,
                                  std::size_t indentation) {
@@ -705,9 +767,11 @@ private:
     }
   }
 
-  /// @brief Writes examples from the root command tree as plain text.
-  /// @param output Stream receiving the examples.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes examples from the root command tree as plain text.
+   * @param output Stream receiving the examples.
+   * @param root Root command parser.
+   */
   static void writePlainExamples(std::ostream &output,
                                  const CommandParser &root) {
     std::vector<const CommandExample *> examples;
@@ -718,8 +782,10 @@ private:
     }
   }
 
-  /// @brief Writes the documentation as a Unix manual page.
-  /// @param output Stream receiving the generated document.
+  /**
+   * @brief Writes the documentation as a Unix manual page.
+   * @param output Stream receiving the generated document.
+   */
   void writeManDocumentation(std::ostream &output) const {
     const CommandParser &root = *parent_command_parser;
     output << ".TH \"" << root.name << "\" \"1\" \"" << currentDate() << "\" \""
@@ -740,18 +806,22 @@ private:
     writeManExamples(output, root);
   }
 
-  /// @brief Writes a manual-page option entry.
-  /// @param output Stream receiving the option entry.
-  /// @param label Display label for the option.
-  /// @param summary Description of the option.
+  /**
+   * @brief Writes a manual-page option entry.
+   * @param output Stream receiving the option entry.
+   * @param label Display label for the option.
+   * @param summary Description of the option.
+   */
   static void writeManOption(std::ostream &output, const std::string &label,
                              const std::string &summary) {
     output << ".TP\n\\fB" << label << "\\fR\n" << summary << '\n';
   }
 
-  /// @brief Writes commands and their options as manual-page entries.
-  /// @param output Stream receiving the command hierarchy.
-  /// @param parser Root of the command subtree to render.
+  /**
+   * @brief Writes commands and their options as manual-page entries.
+   * @param output Stream receiving the command hierarchy.
+   * @param parser Root of the command subtree to render.
+   */
   static void writeManCommands(std::ostream &output,
                                const CommandParser &parser) {
     for (const auto &command : parser.subcommand_parsers) {
@@ -763,9 +833,11 @@ private:
     }
   }
 
-  /// @brief Writes examples from the root command tree as manual-page entries.
-  /// @param output Stream receiving the examples.
-  /// @param root Root command parser.
+  /**
+   * @brief Writes examples from the root command tree as manual-page entries.
+   * @param output Stream receiving the examples.
+   * @param root Root command parser.
+   */
   static void writeManExamples(std::ostream &output,
                                const CommandParser &root) {
     std::vector<const CommandExample *> examples;
@@ -777,7 +849,9 @@ private:
     }
   }
 
-  /// Records whether an option callback reported an invalid value.
+  /**
+   * Records whether an option callback reported an invalid value.
+   */
   bool m_option_error = false;
 };
 

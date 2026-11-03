@@ -8,11 +8,15 @@ class Book {
 public:
   static const char VERSION = 0;
 
-  /// @brief
+  /**
+   * @brief
+   */
   Book() = default;
 
-  /// @brief
-  /// @param arInputStream
+  /**
+   * @brief
+   * @param arInputStream
+   */
   explicit Book(std::istream &arInputStream);
 
   friend std::ostream &operator<<(std::ostream &arOutputStream,
