@@ -136,7 +136,7 @@ public:
    * @param args Queue of command-line tokens to consume.
    * @return The command's execution result, or `1` for an unrecognized token.
    */
-  int parse(std::queue<std::string> &args) const {
+  virtual int parse(std::queue<std::string> &args) const {
     std::optional<std::string> positional_argument;
 
     // iterate over the remaining arguments in the queue by popping the nextitem
