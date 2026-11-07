@@ -6,7 +6,9 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/finance_core.exe",
-			"args": [],
+			"args": [
+				"--help"
+			],
 			"cwd": "${workspaceFolder}",
 			"console": "integratedTerminal",
 			"preLaunchTask": "build-debug-windows"
@@ -16,7 +18,9 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/finance_core",
-			"args": [],
+			"args": [
+				"--help"
+			],
 			"cwd": "${workspaceFolder}",
 			"MIMode": "gdb",
 			"setupCommands": [

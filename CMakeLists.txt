@@ -8,9 +8,27 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Compiler Warning Flags
 if(MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /utf-8)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic -Wconversion)
+endif()
+
+# GCC/Clang Release size optimization with GNU-style linker options
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
+        AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU"
+        AND NOT APPLE)
+    add_compile_options(
+        "$<$<CONFIG:Release>:-Os>"
+        "$<$<CONFIG:Release>:-flto>"
+        "$<$<CONFIG:Release>:-ffunction-sections>"
+        "$<$<CONFIG:Release>:-fdata-sections>"
+    )
+
+    add_link_options(
+        "$<$<CONFIG:Release>:-flto>"
+        "$<$<CONFIG:Release>:-Wl,--gc-sections>"
+        "$<$<CONFIG:Release>:-Wl,-s>"
+    )
 endif()
 
 # ------------------------------------------------------------------------------

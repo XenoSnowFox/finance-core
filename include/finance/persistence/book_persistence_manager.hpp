@@ -33,8 +33,9 @@ public:
    * @throws std::filesystem::filesystem_error If the target already exists or
    * a filesystem operation fails.
    * @throws std::ios_base::failure If the new Book cannot be saved.
+   * @return This manager, allowing chained operations.
    */
-  void create() {
+  BookPersistenceManager &create() {
     const std::filesystem::path filename(mFilename);
     if (std::filesystem::exists(filename)) {
       throw std::filesystem::filesystem_error(
@@ -43,6 +44,7 @@ public:
     }
 
     transaction([](core::domain::Book &) {});
+    return *this;
   }
 
   /**
@@ -58,8 +60,10 @@ public:
    * filesystem operation fails.
    * @throws std::ios_base::failure If an existing Book cannot be opened, read,
    * or saved.
+   * @return This manager, allowing chained operations.
    */
-  void transaction(const std::function<void(core::domain::Book &)> &aCallback) {
+  BookPersistenceManager &
+  transaction(const std::function<void(core::domain::Book &)> &aCallback) {
     core::domain::Book book = loadBook();
     aCallback(book);
 
@@ -94,6 +98,7 @@ public:
     if (hasExistingFile) {
       std::filesystem::remove(backupFilename);
     }
+    return *this;
   }
 
   /**
@@ -104,11 +109,13 @@ public:
    * @throws std::filesystem::filesystem_error If a backup is awaiting recovery.
    * @throws std::ios_base::failure If an existing Book cannot be opened or
    * read.
+   * @return This manager, allowing chained operations.
    */
-  void readOnly(
-      const std::function<void(const core::domain::Book &)> &aCallback) const {
+  BookPersistenceManager &readOnly(
+      const std::function<void(const core::domain::Book &)> &aCallback) {
     const core::domain::Book book = loadBook();
     aCallback(book);
+    return *this;
   }
 
 private:
