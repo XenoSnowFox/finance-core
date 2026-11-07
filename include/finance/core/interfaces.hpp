@@ -8,6 +8,7 @@ namespace finance::core {
  * @tparam IDENTIFIER Type used to represent the object's identifier.
  */
 template <typename IDENTIFIER> struct Identifiable {
+public:
   /**
    * @brief Destroys the object through a base-class pointer.
    */
@@ -16,6 +17,7 @@ template <typename IDENTIFIER> struct Identifiable {
   /**
    * @brief Identifier associated with the object.
    */
-  IDENTIFIER identifier;
+  IDENTIFIER mIdentifier;
 };
+
 } // namespace finance::core
