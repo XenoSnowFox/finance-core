@@ -1,21 +1,54 @@
 #include "finance/command/currency_commands.hpp"
 #include "finance/command/global_command.hpp"
 #include "finance/persistence/book_persistence_manager.hpp"
+#include "finance/presentation/table_renderer.hpp"
 
 #include <algorithm>
 #include <array>
-#include <cctype>
+#include <string>
 #include <vector>
 
 namespace finance::command {
 
 namespace {
 
+inline const finance::presentation::TableDefinition<core::domain::Currency>
+    CurrencyTableDefinition{
+        .mDivider = "  ",
+        .mColumns =
+            {
+                finance::presentation::TableColumn<core::domain::Currency>{
+                    .mHeading = "Code",
+                    .mProcessor =
+                        [](const core::domain::Currency &arCurrency) {
+                          return arCurrency.code;
+                        },
+                },
+                finance::presentation::TableColumn<core::domain::Currency>{
+                    .mHeading = "Symbol",
+                    .mAlignment = presentation::Alignment::MIDDLE,
+                    .mProcessor =
+                        [](const core::domain::Currency &arCurrency) {
+                          return arCurrency.symbol;
+                        },
+                },
+                finance::presentation::TableColumn<core::domain::Currency>{
+                    .mHeading = "Decimal Places",
+                    .mAlignment = presentation::Alignment::MIDDLE,
+                    .mProcessor =
+                        [](const core::domain::Currency &arCurrency) {
+                          return std::to_string(arCurrency.decimal_places);
+                        },
+                },
+            },
+};
+
 /**
- * @brief Prints currencies in an aligned, tab-separated table.
- * @param arCurrencies Currencies to display.
+ * @brief Prints currencies in an aligned plain-text table with two spaces
+ * between columns.
+ * @param arCurrencies Currencies to display, in the order supplied.
  *
- * Preserves the input order. If the collection is empty, prints a message
+ * Preserves input order. If the collection is empty, prints a message
  * instead of a table.
  */
 void printCurrencyTable(
@@ -25,29 +58,10 @@ void printCurrencyTable(
     return;
   }
 
-  const std::string currencyHeader = "Currency";
-  const std::string symbolHeader = "Symbol";
-  const std::string decimalPlacesHeader = "Decimal Places";
-  std::size_t currencyWidth = currencyHeader.size();
-  std::size_t symbolWidth = symbolHeader.size();
-  for (const auto &currency : arCurrencies) {
-    currencyWidth = std::max(currencyWidth, currency.code.size());
-    symbolWidth = std::max(symbolWidth, currency.symbol.size());
-  }
-
-  std::cout << currencyHeader
-            << std::string(currencyWidth - currencyHeader.size(), ' ') << '\t'
-            << symbolHeader
-            << std::string(symbolWidth - symbolHeader.size(), ' ') << '\t'
-            << decimalPlacesHeader << std::endl;
-  for (const auto &currency : arCurrencies) {
-    std::cout << currency.code
-              << std::string(currencyWidth - currency.code.size(), ' ') << '\t'
-              << currency.symbol
-              << std::string(symbolWidth - currency.symbol.size(), ' ') << '\t'
-              << static_cast<unsigned int>(currency.decimal_places)
-              << std::endl;
-  }
+  presentation::TableRenderer<core::domain::Currency> renderer{
+      CurrencyTableDefinition};
+  renderer.format(presentation::Format::TEXT);
+  renderer.render(std::cout, arCurrencies);
 }
 
 } // namespace
@@ -104,20 +118,17 @@ int AddCurrencyCommandParser::executeCommand(
   persistence::BookPersistenceManager bookPersistenceManager{
       GLOBAL_COMMAND_PARSER.book_filename};
   bool currencyAlreadyExists = false;
-  bookPersistenceManager.readOnly(
-      [&currency, &currencyAlreadyExists](
-          const core::domain::Book &arBook) {
-        arBook.all([&currency, &currencyAlreadyExists](
-                       const std::vector<core::domain::Currency>
-                           &arCurrencies) {
-          currencyAlreadyExists =
-              std::any_of(arCurrencies.begin(), arCurrencies.end(),
-                          [&currency](const core::domain::Currency
-                                          &arExistingCurrency) {
-                            return arExistingCurrency.code == currency.code;
-                          });
-        });
-      });
+  bookPersistenceManager.readOnly([&currency, &currencyAlreadyExists](
+                                      const core::domain::Book &arBook) {
+    arBook.all([&currency, &currencyAlreadyExists](
+                   const std::vector<core::domain::Currency> &arCurrencies) {
+      currencyAlreadyExists = std::any_of(
+          arCurrencies.begin(), arCurrencies.end(),
+          [&currency](const core::domain::Currency &arExistingCurrency) {
+            return arExistingCurrency.code == currency.code;
+          });
+    });
+  });
 
   if (currencyAlreadyExists) {
     std::cerr << "Error: currency code '" << currency.code
