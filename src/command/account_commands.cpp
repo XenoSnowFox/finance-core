@@ -1,6 +1,7 @@
 #include "finance/command/account_commands.hpp"
 #include "finance/command/global_command.hpp"
 #include "finance/persistence/book_persistence_manager.hpp"
+#include "finance/presentation/table_renderer.hpp"
 
 #include <algorithm>
 #include <optional>
@@ -12,30 +13,58 @@ namespace finance::command {
 
 namespace {
 
-/**
- * @brief Returns the uppercase label for an account classification.
- * @param aType Account classification to display.
- * @return The classification label.
- */
-std::string_view accountTypeText(core::domain::AccountType aType) {
-  using core::domain::AccountType;
+inline const finance::presentation::TableDefinition<core::domain::Account>
+    AccountTableDefinition{
+        .mDivider = "  ",
+        .mColumns =
+            {
+                finance::presentation::TableColumn<core::domain::Account>{
+                    .mHeading = "Code",
+                    .mProcessor =
+                        [](const core::domain::Account &account) {
+                          return account.mIdentifier;
+                        },
+                },
+                finance::presentation::TableColumn<core::domain::Account>{
+                    .mHeading = "Type",
+                    .mProcessor =
+                        [](const core::domain::Account &account) {
+                          using core::domain::AccountType;
 
-  switch (aType) {
-  case AccountType::UNKNOWN:
-    return "UNKNOWN";
-  case AccountType::ASSET:
-    return "ASSET";
-  case AccountType::LIABILITY:
-    return "LIABILITY";
-  case AccountType::EQUITY:
-    return "EQUITY";
-  case AccountType::INCOME:
-    return "INCOME";
-  case AccountType::EXPENSE:
-    return "EXPENSE";
-  }
-  return "UNKNOWN";
-}
+                          switch (account.mType) {
+                          case AccountType::UNKNOWN:
+                            return "UNKNOWN";
+                          case AccountType::ASSET:
+                            return "ASSET";
+                          case AccountType::LIABILITY:
+                            return "LIABILITY";
+                          case AccountType::EQUITY:
+                            return "EQUITY";
+                          case AccountType::INCOME:
+                            return "INCOME";
+                          case AccountType::EXPENSE:
+                            return "EXPENSE";
+                          }
+                          return "UNKNOWN";
+                        },
+                },
+                finance::presentation::TableColumn<core::domain::Account>{
+                    .mHeading = "Currency",
+                    .mAlignment = presentation::Alignment::MIDDLE,
+                    .mProcessor =
+                        [](const core::domain::Account &account) {
+                          return account.mCurrency.code;
+                        },
+                },
+                finance::presentation::TableColumn<core::domain::Account>{
+                    .mHeading = "Name",
+                    .mProcessor =
+                        [](const core::domain::Account &account) {
+                          return account.mName;
+                        },
+                },
+            },
+};
 
 /**
  * @brief Maps a lowercase account type name to its classification.
@@ -66,49 +95,23 @@ accountTypeFromName(std::string_view aTypeName) {
 }
 
 /**
- * @brief Prints accounts in an aligned, tab-separated table.
- * @param arAccounts Accounts to display, in repository order.
+ * @brief Prints accounts in an aligned plain-text table with two spaces
+ * between columns.
+ * @param arAccounts Accounts to display, in the order supplied.
  *
- * If the collection is empty, prints a message instead of a table.
+ * Preserves input order. If the collection is empty, prints a message instead
+ * of a table.
  */
-void printAccountTable(
-    const std::vector<core::domain::Account> &arAccounts) {
+void printAccountTable(const std::vector<core::domain::Account> &arAccounts) {
   if (arAccounts.empty()) {
     std::cout << "No account information found.";
     return;
   }
 
-  const std::string codeHeader = "Code";
-  const std::string typeHeader = "Type";
-  const std::string currencyHeader = "Currency";
-  const std::string nameHeader = "Name";
-  std::size_t codeWidth = codeHeader.size();
-  std::size_t typeWidth = typeHeader.size();
-  std::size_t currencyWidth = currencyHeader.size();
-  std::size_t nameWidth = nameHeader.size();
-  for (const auto &account : arAccounts) {
-    codeWidth = std::max(codeWidth, account.mIdentifier.size());
-    typeWidth = std::max(typeWidth, accountTypeText(account.mType).size());
-    currencyWidth = std::max(currencyWidth, account.mCurrency.code.size());
-    nameWidth = std::max(nameWidth, account.mName.size());
-  }
-
-  std::cout << codeHeader << std::string(codeWidth - codeHeader.size(), ' ')
-            << '\t' << typeHeader
-            << std::string(typeWidth - typeHeader.size(), ' ') << '\t'
-            << currencyHeader
-            << std::string(currencyWidth - currencyHeader.size(), ' ') << '\t'
-            << nameHeader << std::endl;
-  for (const auto &account : arAccounts) {
-    const std::string_view type = accountTypeText(account.mType);
-    std::cout << account.mIdentifier
-              << std::string(codeWidth - account.mIdentifier.size(), ' ')
-              << '\t' << type << std::string(typeWidth - type.size(), ' ')
-              << '\t' << account.mCurrency.code
-              << std::string(currencyWidth - account.mCurrency.code.size(),
-                             ' ')
-              << '\t' << account.mName << std::endl;
-  }
+  presentation::TableRenderer<core::domain::Account> renderer{
+      AccountTableDefinition};
+  renderer.format(presentation::Format::TEXT);
+  renderer.render(std::cout, arAccounts);
 }
 
 } // namespace
@@ -138,30 +141,26 @@ int CreateAccountByTypeCommandParser::executeCommand(
   bool accountAlreadyExists = false;
   persistence::BookPersistenceManager bookPersistenceManager{
       GLOBAL_COMMAND_PARSER.book_filename};
-  bookPersistenceManager.readOnly(
-      [this, &currency, &accountAlreadyExists](
-          const core::domain::Book &arBook) {
-        arBook.all([this, &currency](
-                       const std::vector<core::domain::Currency>
-                           &arCurrencies) {
-          const auto matchingCurrency =
-              std::find_if(arCurrencies.begin(), arCurrencies.end(),
-                           [this](const core::domain::Currency &arCurrency) {
-                             return arCurrency.code == *this->mCurrencyCode;
-                           });
-          if (matchingCurrency != arCurrencies.end()) {
-            currency = *matchingCurrency;
-          }
-        });
+  bookPersistenceManager.readOnly([this, &currency, &accountAlreadyExists](
+                                      const core::domain::Book &arBook) {
+    arBook.all([this, &currency](
+                   const std::vector<core::domain::Currency> &arCurrencies) {
+      const auto matchingCurrency =
+          std::find_if(arCurrencies.begin(), arCurrencies.end(),
+                       [this](const core::domain::Currency &arCurrency) {
+                         return arCurrency.code == *this->mCurrencyCode;
+                       });
+      if (matchingCurrency != arCurrencies.end()) {
+        currency = *matchingCurrency;
+      }
+    });
 
-        static_cast<const core::repository::AccountRepository &>(arBook)
-            .forEach([this, &accountAlreadyExists](
-                         const core::domain::Account &arAccount) {
-              accountAlreadyExists =
-                  accountAlreadyExists ||
-                  arAccount.mIdentifier == *this->mIdentifier;
-            });
-      });
+    static_cast<const core::repository::AccountRepository &>(arBook).forEach(
+        [this, &accountAlreadyExists](const core::domain::Account &arAccount) {
+          accountAlreadyExists = accountAlreadyExists ||
+                                 arAccount.mIdentifier == *this->mIdentifier;
+        });
+  });
 
   if (accountAlreadyExists) {
     std::cerr << "Error: account code '" << *mIdentifier
@@ -198,8 +197,8 @@ int ListAccountCommandParser::executeCommand(
       .readOnly([&accountType](const core::domain::Book &arBook) {
         std::vector<core::domain::Account> accounts;
         static_cast<const core::repository::AccountRepository &>(arBook)
-            .forEach([&accounts, &accountType](
-                         const core::domain::Account &arAccount) {
+            .forEach([&accounts,
+                      &accountType](const core::domain::Account &arAccount) {
               if (!accountType || arAccount.mType == *accountType) {
                 accounts.push_back(arAccount);
               }
