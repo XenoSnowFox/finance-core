@@ -274,11 +274,12 @@ private:
   /**
    * @brief Handles a help keyword by printing help for this parser.
    * @param keyword Token being checked for a help option.
-   * @param args Remaining tokens; unused because help exits immediately.
+   * @param arArgs Remaining tokens; unused because help exits immediately.
    * @return `true` when help was printed; otherwise `false`.
    */
-  bool dispatchHelpDocumentation(const std::string &keyword,
-                                 std::queue<std::string> &args) const {
+  bool dispatchHelpDocumentation(
+      const std::string &keyword,
+      [[maybe_unused]] std::queue<std::string> &arArgs) const {
     if (keyword == "-h" || keyword == "--help") {
       this->printHelpDocumentation();
       return true;

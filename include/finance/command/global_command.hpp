@@ -5,6 +5,7 @@
 #include <queue>
 #include <string>
 
+#include "finance/command/account_commands.hpp"
 #include "finance/command/book_commands.hpp"
 #include "finance/command/currency_commands.hpp"
 #include "finance/command/documentation_commands.hpp"
@@ -29,7 +30,7 @@ struct GlobalCommandParser : CommandParser {
                                .argument_name = std::nullopt,
                                .summary = "Enable verbose logging.",
                                .callback =
-                                   [this](std::queue<std::string> &args) {
+                                   [this](std::queue<std::string> &) {
                                      this->verbose_logging = true;
                                    }},
                 ArgumentParser{
@@ -48,6 +49,7 @@ struct GlobalCommandParser : CommandParser {
             {
                 std::make_shared<DocumentationCommandParser>(*this),
                 std::make_shared<CurrencyCommandParser>(*this),
+                std::make_shared<AccountCommandParser>(*this),
                 std::make_shared<BookCommandParser>(*this),
             },
             {

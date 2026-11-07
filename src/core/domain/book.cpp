@@ -14,7 +14,11 @@ Book::Book(std::istream &arInputStream) : Book() {
     switch (objectType) {
 
     case Book::RECORD_CURRENCY:
-      this->add(Currency(arInputStream));
+      repository::CurrencyRepository::add(Currency(arInputStream));
+      break;
+
+    case Book::RECORD_ACCOUNT:
+      repository::AccountRepository::add(Account(arInputStream));
       break;
 
     default:
@@ -29,9 +33,17 @@ std::ostream &operator<<(std::ostream &arOutputStream, const Book &arBook) {
   // output the version number
   arOutputStream << arBook.VERSION;
 
-  arBook.forEach([&arOutputStream, &arBook](const domain::Currency &currency) {
-    arOutputStream << arBook.RECORD_CURRENCY << currency;
-  });
+  // output all the currencies
+  arBook.repository::CurrencyRepository::forEach(
+      [&arOutputStream, &arBook](const domain::Currency &currency) {
+        arOutputStream << arBook.RECORD_CURRENCY << currency;
+      });
+
+  // output all the accounts
+  arBook.repository::AccountRepository::forEach(
+      [&arOutputStream, &arBook](const domain::Account &arAccount) {
+        arOutputStream << arBook.RECORD_ACCOUNT << arAccount;
+      });
 
   return arOutputStream;
 }

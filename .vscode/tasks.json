@@ -28,6 +28,20 @@
 			"command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON && cmake --build build --target finance_core_tests",
 			"group": "build",
 			"problemMatcher": "$gcc"
-		}
+		},
+		{
+			"label": "build-release-windows",
+			"type": "shell",
+			"command": "cmake -S . -B build; cmake --build build --config Release --target finance_core",
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "build-release-linux",
+			"type": "shell",
+			"command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target finance_core",
+			"group": "build",
+			"problemMatcher": "$gcc"
+		},
 	]
 }

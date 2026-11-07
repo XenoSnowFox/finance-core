@@ -1,10 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <sstream>
-#include <vector>
 
-#include "finance/core/domain/currency.hpp"
+#include "finance/core/repository/account_repository.hpp"
 #include "finance/core/repository/currency_repository.hpp"
 
 namespace finance::core::domain {
@@ -17,8 +15,12 @@ namespace finance::core::domain {
  * records, with no end marker. The reader does not validate the version and
  * terminates the process when it encounters an unsupported record tag.
  */
-class Book : public repository::CurrencyRepository {
+class Book : public repository::CurrencyRepository,
+             public repository::AccountRepository {
 public:
+  using repository::AccountRepository::add;
+  using repository::CurrencyRepository::add;
+
   /**
    * @brief Version byte written at the start of a serialized book.
    *
@@ -28,10 +30,13 @@ public:
 
   /**
    * @brief Record tag identifying a serialized currency record.
-   *
-   * Other record tags are not supported by the reader.
    */
   static const std::uint8_t RECORD_CURRENCY = 1;
+
+  /**
+   * @brief Record tag identifying a serialized account record.
+   */
+  static const std::uint8_t RECORD_ACCOUNT = 2;
 
   /**
    * @brief Creates an empty book.
