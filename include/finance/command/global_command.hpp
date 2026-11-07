@@ -29,7 +29,7 @@ struct GlobalCommandParser : CommandParser {
                                .argument_name = std::nullopt,
                                .summary = "Enable verbose logging.",
                                .callback =
-                                   [this](std::queue<std::string> &args) {
+                                   [this](std::queue<std::string> &) {
                                      this->verbose_logging = true;
                                    }},
                 ArgumentParser{
